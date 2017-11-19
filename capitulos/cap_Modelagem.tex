@@ -19,8 +19,8 @@ Primeiramente, modelou-se o comportamento do sistema em uma Máquina de Estados F
 
 \section{Modelagem em Máquina de Estados Finita}
 
-A partir da descrição e dos requisitos de projeto, modelou-se o comportamento do sistema com apenas um eixo por meio de um autômato. O intuito do desenvolvimento desse autômato foi para se obter uma melhor compreensão do funcionamento da máquina. 
-O autômato desenvolvido pode ser visto na figura \ref{fig:automato} e as descrições dos simbolos usados para estados e transições podem ser vistos na tabela \ref{tab:automato}. 
+A partir da descrição e dos requisitos de projeto, modelou-se o comportamento do sistema com apenas um eixo (um atuador e uma seringa) por meio de um autômato. O intuito do desenvolvimento desse autômato foi para se obter uma melhor compreensão do funcionamento da máquina. 
+O autômato desenvolvido pode ser visto na figura \ref{fig:automato} e as descrições dos simbolos usados para estados e transições podem ser vistos na tabela \ref{tab:automato}. Por o autômato ser simples, pode-se ver claramente que ele não apresenta estados bloqueantes, {\it dead-locks} ou {\it live-locks}, sem a necessidade do uso de ferramentas mais complexas ou de programas de simulação. \cite{book:Cassandras}
 
 Considerando que a máquina entra no estado inicial ao ser ligada, a primeira ação que deve ocorrer é a inicialização da máquina (evento init), que indica que a máquina está pronta para realizar operações. Após ser inicializado, o sistema deve ser capaz de entrar nos diferentes modos de operação. Ao entrar em um modo de oparação específico, o sistema deve ser capaz de mover o êmbolo da seringa de acordo com as restrições desse modo. Também adicionou-se um estado que representa a ocorrência de um erro durante a operação da máquina (estado ERROR), como, por exemplo, a pressão máxima da seringa ser excedida.
 
@@ -60,7 +60,7 @@ $\sim$ip  & Retornar para a definição de parâmetros
 
 \section{Modelagem em rede de Petri}
 
-Pode ser visto no autômato da figura que o usuário nunca poderia alcançar os modos de operação sem que os dois eixos fossem inicializados primeiro. No entanto, para fins de desenvolvimento, é desejável que esses modos sejam acessíveis sem o procedimento de inicialização ou com a inicialização de apenas um dos eixos. Então, foi decidido alterar os autômatos para permitir que isso acontecesse, mas com a restrição de nunca mover o êmbolo de um eixo (exceto no procedimento de inicialização) se esse eixo não for inicializado. Tais mudanças e o detalhamento dos processos tornariam o autômato muito grande e complexo, por isso foi decidido modelar o sistema com uma rede Petri.
+Pode ser visto no autômato da figura que o usuário nunca poderia alcançar os modos de operação sem que os dois eixos fossem inicializados primeiro. No entanto, para fins de desenvolvimento, é desejável que esses modos sejam acessíveis sem o procedimento de inicialização ou com a inicialização de apenas um dos eixos. Então, foi decidido alterar os autômatos para permitir que isso acontecesse, mas com a restrição de nunca mover o êmbolo de um eixo se esse eixo não for inicializado (exceto no procedimento de inicialização). Tais mudanças e o detalhamento dos processos tornariam o autômato muito grande e complexo, por isso foi decidido modelar o sistema com uma rede Petri.
 
 A rede de Petri projetada em nível de implementação para a máquina com um eixo com sua marcação inicial pode ser vista na figura \ref{fig:petri}. As descrições das transições são as mesmas da tabela \ref{tab:automato}. A implementação completa com dois eixos ocorre pela implementação dessa rede duas vezes, onde os lugares brancos das duas redes se sobrepõem. Ou seja, o modo de operação dos eixos sempre é o mesmo, mas o estado de cada eixo pode ser diferente. Isso é útil para quando apenas um eixo da máquina está sendo utilizado.
 
@@ -78,7 +78,7 @@ Vale ressaltar que, caso algum dos êmbolos esteja em movimento e ocorrer algum e
 \section{Simulações da rede de Petri}
 
 Para a verificação de que rede atende corretamente aos requisitos do projeto e possui um comportamento adequado,
-ela foi simulada através do programa {\it Hierarchical Petri net Simulator} (HiPS). Ele nos permite fazer análises estruturais e comportamentais da rede. Como esperado, a análise estrutural, que pode ser vista na figura \ref{fig:petriSim}, mostrou que a rede é conservadora e consistente. Através da análise comportamental, obteve-se que a rede e todas as transições são L4-vivas. Finalmente, por meio do acionamento manual das transições, verificou-se o correto comportamento do sistema.
+ela foi simulada através do programa {\it Hierarchical Petri net Simulator} (HiPS). Ele nos permite fazer análises estruturais e comportamentais da rede. Como esperado, a análise estrutural, que pode ser vista na figura \ref{fig:petriSim}, mostrou que a rede é conservadora e consistente. Através da análise comportamental, obteve-se que a rede e todas as transições são L4-vivas. Finalmente, por meio do acionamento manual das transições, verificou-se o correto comportamento do sistema. \cite{book:Cassandras}
 
 \begin{figure}[h]
 \centering

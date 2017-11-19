@@ -4,7 +4,7 @@
 \chapter{Projeto de Automação}
 
 % Resumo opcional. Comentar se não usar.
-\resumodocapitulo{Resumo opcional.}
+%\resumodocapitulo{Resumo opcional.}
 
 \section{Introdu\c{c}\~{a}o}
 
@@ -15,16 +15,132 @@ desci\c{c}\~{a}o do sistema desenvolvido.
 Deve-se ressaltar que equa\c{c}\~{o}es fazem parte do texto, devendo receber pontua\c{c}\~{a}o apropriada e ser numerada. Alguns exemplos s\~{a}o mostrados na se\c{c}\~{a}o \ref
 {SecClassificador}.
 
-\section{Escolha do controlador e seus módulos}
+\section{Metodologia}
 
-Variáveis
+O projeto de automação
+
+\section{Modelagem do Sistema}
+
+Primeiramente, modelou-se o comportamento do sistema em uma Máquina de Estados Finita (autômato), de forma a se obter uma descrição simples de como a máquina opera. Em seguida, detalhou-se mais a modelagem por meio de uma rede de Petri, onde alcançou-se um nível de implementação.  A rede de Petri obtida foi simulada para a verificação de que ela atende corretamente aos requisitos do projeto.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = .7\linewidth]{figs/automato}
+\caption{Automato do funcionamento simplificado do sistema.}
+\label{fig:automato}
+\end{figure}
+
+\subsection{Modelagem em Máquina de Estados Finita}
+
+A partir da descrição e dos requisitos de projeto, modelou-se o comportamento do sistema com apenas um eixo (um atuador e uma seringa) por meio de um autômato. O intuito do desenvolvimento desse autômato foi para se obter uma melhor compreensão do funcionamento da máquina. 
+O autômato desenvolvido pode ser visto na figura \ref{fig:automato} e as descrições dos simbolos usados para estados e transições podem ser vistos na tabela \ref{tab:automato}. Por o autômato ser simples, pode-se ver claramente que ele não apresenta estados bloqueantes, {\it dead-locks} ou {\it live-locks}, sem a necessidade do uso de ferramentas mais complexas ou de programas de simulação. \cite{book:Cassandras}
+
+Considerando que a máquina entra no estado inicial ao ser ligada, a primeira ação que deve ocorrer é a inicialização da máquina (evento init), que indica que a máquina está pronta para realizar operações. Após ser inicializado, o sistema deve ser capaz de entrar nos diferentes modos de operação. Ao entrar em um modo de oparação específico, o sistema deve ser capaz de mover o êmbolo da seringa de acordo com as restrições desse modo. Também adicionou-se um estado que representa a ocorrência de um erro durante a operação da máquina (estado ERROR), como, por exemplo, a pressão máxima da seringa ser excedida.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l|l}
+Símbolo  & Descrição                                   \\\hline
+ON     & Máquina ligada, mas não inicializada            \\
+INIT   & Máquina ligada e inicializada                \\
+STB\_M & Em modo Stand by                              \\
+INJ\_M & Em modo de injeção com parâmetros não definidos  \\
+INJ\_P & Em modo de injeção com parâmetros definidos     \\
+INJ\_I & Injetando em modo de injeção                   \\
+FIL\_M & Em modo de enchimento                               \\
+FIL\_R & Retraindo em modo de enchimento (enchendo)          \\
+FIL\_I & Injetando em modo de enchimento          \\
+MAN\_M & Em modo manual                               \\
+MAN\_R & Retraindo em modo manual                     \\
+MAN\_I & Injetando em modo manual                      \\
+ERROR  & Estado de erro                                   \\
+init      & Eixo inicializado                        \\
+fixed     & Erro foi corrigido                              \\
+e         & Erro ocorreu                               \\
+x         & Comando para ir para o modo x \\% (m, f, i ou s)       \\
+%& (m = manual, f = enchimento, i = injeção ou s = stand by)       \\
+$\sim$x   & comando para sair do modo x                      \\
+xr        & Comando para retrair êmbolo no modo x         \\
+$\sim$xr  & Comando para parar de retrair êmbolo no modo x \\
+xi        & Comando para injetar no modo x                  \\
+$\sim$xi  & Comando para parar de injetar no modo x          \\
+ip        & Parâmetros de injeção foram definidos                 \\
+$\sim$ip  & Retornar para a definição de parâmetros   
+\end{tabular}
+\caption{Descrição dos simbolos do autômato da figura \ref{fig:automato}.}
+\label{tab:automato}
+\end{table}
+
+\subsection{Modelagem em rede de Petri}
+
+Pode ser visto no autômato da figura que o usuário nunca poderia alcançar os modos de operação sem que os dois eixos fossem inicializados primeiro. No entanto, para fins de desenvolvimento, é desejável que esses modos sejam acessíveis sem o procedimento de inicialização ou com a inicialização de apenas um dos eixos. Então, foi decidido alterar os autômatos para permitir que isso acontecesse, mas com a restrição de nunca mover o êmbolo de um eixo se esse eixo não for inicializado (exceto no procedimento de inicialização). Tais mudanças e o detalhamento dos processos tornariam o autômato muito grande e complexo, por isso foi decidido modelar o sistema com uma rede Petri.
+
+A rede de Petri projetada em nível de implementação para a máquina com um eixo com sua marcação inicial pode ser vista na figura \ref{fig:petri}. As descrições das transições são as mesmas da tabela \ref{tab:automato}. A implementação completa com dois eixos ocorre pela implementação dessa rede duas vezes, onde os lugares brancos das duas redes se sobrepõem. Ou seja, o modo de operação dos eixos sempre é o mesmo, mas o estado de cada eixo pode ser diferente. Isso é útil para quando apenas um eixo da máquina está sendo utilizado.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = \linewidth]{figs/petri}
+\caption{Rede de Petri projetada em nível de implementação.}
+\label{fig:petri}
+\end{figure}
+
+Pode-se ver que sempre haverá uma ficha entre os lugares em verde e uma ficha fora desses lugares. A ficha entre os lugares em verde representa o estado dos eixos, representa se os eixos estão inicializados ou se ocorreu um erro no sistema. A ficha fora dos lugares em verde representa em qual modo de operação o sistema está. Observe que, se o eixo não for inicializado, a ficha fora dos lugares em verde não alcançará os lugares em azul, que representam os estados em que os êmbolos estão em movimento, conforme indicado anteriormente.
+
+Vale ressaltar que, caso algum dos êmbolos esteja em movimento e ocorrer algum erro no sistema (evento e), as transições $\sim$xr e $\sim$xi, que são descritas na tabela \ref{tab:automato}, são acionadas de modo a parar o movimento do êmbolo. Pode-se observar também que, de acordo com a rede de Petri, uma ficha poderia transicionar do lugar MANUAL para o lugar RETRACT PLUNGER e em seguida para o lugar FILL, que seria um problema, já que essa última transição deveria ser de volta para o lugar MANUAL. Isso poderia ser simplesmente corrigido pela adição de alguns lugares adicionais na rede. Porém, como todos os eventos relacionados a essas transições são determinísticos, decidiu-se manter a rede simples e garantir que nunca ocorrerá uma sequência de eventos que resultaria em transições problemáticas como a citada.
+
+\subsection{Simulações da rede de Petri}
+
+Para a verificação de que rede atende corretamente aos requisitos do projeto e possui um comportamento adequado,
+ela foi simulada através do programa {\it Hierarchical Petri net Simulator} (HiPS). Ele nos permite fazer análises estruturais e comportamentais da rede. Como esperado, a análise estrutural, que pode ser vista na figura \ref{fig:petriSim}, mostrou que a rede é conservadora e consistente. Através da análise comportamental, obteve-se que a rede e todas as transições são L4-vivas. Finalmente, por meio do acionamento manual das transições, verificou-se o correto comportamento do sistema. \cite{book:Cassandras}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = \linewidth]{figs/petriSim}
+\caption{Rede de Petri projetada em nível de implementação.}
+\label{fig:petriSim}
+\end{figure}
+
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Modelagem dos Perfis de Injeção}
+
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Escolha dos Sensores}
+
+O sistema precisa de três tipos de sensores, transdutores de pressão, encoders e sensores ópticos.
+
+\subsection{Escolha dos encoders}
+
+De forma a garantir que a injeção ocorra de forma correta, o fluxo de injeção é monitorado por encoders incrementais, um para cada atuador. Esses encoders são acoplados a um pino que sai da caixa de engrenagem dos atuadores, que completa uma revolução para cada 0,2 polegadas movidas pelo atuador linear. Assim, é importante que se escolha um encoder que apresente resolução boa o suficiente para a realização do controle do atuador de forma satisfatória, mas que também não ultrapasse o limite de frequência de leitura do cartão da CLP ao qual estará conectado.
+
+Sabendo que o diâmetro interno da seringa é de 40 mm, uma velocidade do atuador de 0,8 mm/s corresponde á um fluxo de 1 mL/s. Definindo um fluxo máximo de injeção de 15 mL/s, a velocidade máxima correspondente do atuador é de 12 mm/s. Assim, a resolução dos encoders deve ser tal que a frequência do sinal provindo deles quando o atuador move-se a 12 mm/s deve ser menor do que a frequência máxima de entrada dos cartões da CLP onde os encoders estão ligados. Assim, essa relação pode ser descrita por
+\begin{equation}
+\frac{\text{Velocidade máxima}}{k}\times \text{Resolução do encoder} \leq \text{Frequência máxima do cartão},
+\end{equation}
+onde $k$ é a relação de velocidade linear do atuador e velocidade rotacional do encoder de 5,08 mm/revolução.
+A maioria dos cartões disponibilizados possuem uma frequência máxima de entrada de 250 kHz. Para esses cartões, a resolução máxima que os encoders podem ter é de aproximadamente 100.000 pulsos por revolução.
+
+Inicialmente, escolheu-se encoders de 5.000 pulsos por revolução. Logo percebeu-se que a resolução era muito baixa, onde a discretização dos gráficos de posição do atuador era muito evidente. Isso causou problemas para uma obtenção precisa da velocidade do atuador, resultando em um sistema de controle com respostas insatisfatórias. Por isso, resolveu-se mudar para os encoders do modelo 847T-DM26-RQ50000 da fabricante Allen-Bradley, que são de 50.000 pulsos por revolução e aceitam alimentação de 24 Volts com saída no mesmo nível da entrada \cite{web:encoder}. O encoder escolhido pode ser visto na figura \ref{fig:enc}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = 0.5\linewidth]{figs/encoder}
+\caption{Encoder do modelo 847T-DM26-RQ50000 da fabricante Allen-Bradley.}
+\label{fig:enc}
+\end{figure}
+
+\section{Escolha do Controlador e Seus Módulos}
+
 
 
 \section{Diagramas elétricos}
 
+\section{Tela de Supervisório e Interface de Usuário}
 
-
-\section{Tela de supervisório e interface de usuário}
+\section{Controle dos Atuadores}
 
 
 

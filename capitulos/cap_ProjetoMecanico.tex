@@ -6,16 +6,234 @@
 % Resumo opcional. Comentar se não usar.
 %\resumodocapitulo{Resumo opcional.}
 
-\section{Introdu\c{c}\~{a}o}
+\section{Introdução}
+
+Esse capítulo consiste da descrição do projeto mecânico do sistema. Conforme as especificações de projeto e com base no protótipo já construido em \cite{article:PSDP}, fez-se um diagrama com os principais componentes do sistema. Em seguida, detalha-se a escolha de cada um desses componentes de forma a se satisfazer os requisitos de funcionamento da máquina. Finalmente, detalha-se a construção da Máquina. 
 
 
+\section{Diagrama de Arquitetura da Máquina}
 
-\section{Compenetes necessários}
+A arquitetura da máquina pode ser vista no diagrama da figura \ref{fig:digArq}. A máquina pode ser dividida em dois sub-sistemas principais, o sub-sistema de controle e o sub-sistema dos atuadores lineares com as seringas. 
+Os atuadores lineares e as seringas foram montados em uma estrutura de alumínio forte o suficiente para suportar os esforços aplicados pelos atuadores durante a operação da máquina. O primeiro protótipo construído em \cite{article:PSDP} foi feito em madeira e apresentou problemas de deformação na estrutura. A saída das seringas são ligadas a tubulações médicas, que são responsáveis por transportar os fluidos injetados até os cateteres.
+
+O sub-sistema de controle é descrito no capítulo Projeto de Automação e encontra-se dentro da cabine do carrinho onde o injetor foi montado. 
+Como pode ser visto no diagrama, utilizou-se encoders incrementais e sensores de limite ópticos para fornecer o retorno de posição dos atuadores para o sistema de controle. Utilizou-se também transdutores de pressão ligados às seringas para o controle da pressão no sistema.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figs/DiagramaArquitetura}
+\caption{Diagrama de arquitetura da máquina.}
+\label{fig:digArq}
+\end{figure}
+\section{Tubos Médicos, Seringas e Agentes de Contraste}
+
+Tubos médicos, seringas e cateteres foram fornecidos pelo departamento de imagens médicas do WIMR. É importante garantir que projeto da máquina seja totalmente compatível com esses componentes.
+
+Cateter é um tubo fino que pode ser inserido dentro de vasos sanguíneos para o acesso a instrumentos cirúrgicos e para a injeção ou drenagem de fluídos.
+Para a neuroangiografia, utiliza-se cateteres coronários, que possuem diâmetro interno de 0.038 polegadas. Os tubos médicos utilizados são feitos de material de poliuretano, que é altamente flexível, e possui diâmetro interno de 1.8 milímetro.
+\cite{book:cateter}
+
+As seringas utilizadas possuem 40 milímetro de diâmetro interno e 150 mililitro de capacidade. Os êmbolos das seringas são separáveis e necessitam de um conector especial para se conectarem aos atuadores.
+
+O principal agente de contraste a ser utilizado é Omnipaque (Iohexol) com uma concentração de 300 miligramas de iodo por mililitro. À temperatura ambiente de $20^o$ C, a viscosidade dinâmica do Iohexol é 0,0116 Pascal segundos \cite{web:OMNIPAQUE}. Quando uma concentração menor é desejada, o contraste é misturado com uma solução salina, diminuindo assim a viscosidade dinâmica da mistura. À temperatura de $20^o$ C, a viscosidade dinâmica da solução salina de uso médico médio, 0,9 moles de NaCl por quilograma, tem uma viscosidade dinâmica de 0,001 Pascal segundos \cite{web:viscosidade}. Ambas as substâncias apresentam densidade próxima da densidade da água.
+
+Para o projeto da máquina, é essencial que se saiba os parâmetros de injeções normalmente utilizados.
+Dois neuro-cirurgiões foram consultados em \cite{article:PSDP} sobre parâmetros típicos de injeção. O primeiro consultado foi o Dr. David Niemann, professor associado de cirurgia neurológica na Faculdade de Medicina e Saúde Pública da Universidade de Wisconsin.
+Ele disse que a taxa de fluxo para neuroangiografia 4D normalmente é em torno de 3 mililitros por segundo para um volume de 36 mililitros. 
+Em seguida, consultou-se o Dr. Charlie Strother. Ele disse que, apesar de as máquina comerciais disponíveis serem capazes de realizar injeções com fluxos maiores, a taxa de fluxo mais relevante é perto 10 mililitros ao longo de um período de 5 segundos.
+
+\section{Atuadores Lineares}
+
+Para a escolha dos atuadores lineares a serem utilizados, precisa-se saber qual é a velocidade de operação e a força a ser aplicada pelo atuador. Considerando as propriedades dos fluidos a serem injetados e do sistema de injeção, as forças máximas a serem aplicadas pelos atuadores para diferentes valores de fluxo foram calculadas em \cite{article:PSDP} através de um algoritmo de Matlab que aplica a equação de Hagen-Poiseuille. Esse algoritmo determina a força necessária a ser aplicada no êmbolo da seringa para gerar uma taxa de fluxo desejada.
+Considerando os parâmetros de injeções fornecidos pelos doutores Charlie Strother e David Niemann, definiu-se 5 mililitros por segundo como a máxima taxa de fluxo necessária. Alguns valores calculados para a força a ser aplicada podem ser vistos na tabela \ref{tab:forcasAtuador}, onde a coluna do centro corresponde a uma mistura meio-a-meio de solução salina e solução de contraste.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l|c|c}
+& Mistura de 50\% & 100\% de solução de contraste \\ 
+\hline 
+Força para 1 mL/s & 178N & 810N \\ 
+Força para 3 mL/s & 498N & 2402N \\ 
+Força para 5 mL/s & 827N & 4003N \\ 
+\end{tabular} 
+\caption{Tabela de forças a serem aplicadas pelo atuador}
+\label{tab:forcasAtuador}
+\end{table}
+
+Assim, a força máxima a ser aplicada pelo atuador é de aproximadamente 4000 Newtons. Como há muitas possíveis fontes de erro nos cálculos, como a variação das viscosidades dinâmicas dos fluidos com a variação da temperatura e perdas de energia no sistema serem diferentes das encontradas na literatura, deve-se selecionar um atuador capaz de fornecer uma força maior do que a calculada.
+
+Optou-se pela utilização de atuadores lineares eletro-mecânicos, onde um motor elétrico gera movimento rotativo que é convertido em linear através de um parafuso e engrenagens \cite{book:AcLinear}. Considerando todos os requisitos, escolheu-se o atuador linear modelo ppa24-58b65-12nhlx da linha Electrak da empresa Thompson Linear Inc., que doou os atuadores para o projeto. Esse modelo requer uma tensão de entrada de 24 Volts DC, possui uma capacidade de carga dinâmica de 6672 N (1500 lbf), não possui freio e possui curso de deslocamento de 12 polegadas. Os atuadores pode ser visto na figura \ref{fig:atuador}, onde estão montados à máquina.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=.45\textwidth, angle=270]{figs/ActuatorMount}
+\caption{Atuadores lineares montados à máquina.}
+\label{fig:atuador}
+\end{figure}
+
+\section{Montagem dos Atuadores e Seringas}
+
+Uma parte importante do projeto mecânico é garantir que as seringas e os atuadores estejam bem conectados à placa de alumínio para que não se movam quando o injetor entrar em uso. 
+O protótipo feito em \cite{article:PSDP} teve problemas com a deformação da seringa, pois elas tendiam a se dobrar na entrada do êmbolo durante a injeção. Isso fez com que elas se movessem com o atuador. Para resolver este problema, foi decidido usar três blocos de suporte de alumínio para fixar a seringa na placa de alumínio, como mostrado na figura \ref{fig:seringas}. Dois deles com orifícios cilíndricos cercam a entrada do êmbolo e o outro com o orifício em forma de cone abraça a frente das seringas. Esta estrutura garante que as seringas permaneçam em posição fixa durante as fases de injeção e enchimento. 
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{figs/SyrMount1}
+  %\caption{Cart with the adaptations.}
+  %\label{fig:cart}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{figs/SyrMount2}
+  %\caption{Cart without the adaptations.}
+  %\label{fig:origCart}
+\end{subfigure}
+\caption{Fixação das seringas à placa de alumínio.}
+\label{fig:seringas}
+\end{figure}
+
+Os atuadores lineares utilizados possuem pinos na parte traseira que podem ser usados para fixação. Por isso, foi decidido fixalos-los em dois pontos, nesses pinos traseiros e com um bloco de alumínio com furos cilíndricos na parte dianteira do atuador. A fixação pode ser vista na figura \ref{fig:atuador}.
+Ambas as estruturas, as montagens dos atuadores e das seringas, foram fixadas na mesma placa de alumínio. Para garantir que eles estejam alinhados, foram feitas ranhuras na placa ao invés de furos. Permitindo assim o movimento das estruturas na direção perpendicular à direção da injeção para o alinhamento durante a montagem. A estrutura completa pode ser vista na figura \ref{fig:baseAluminio}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=.6\textwidth, angle=270]{figs/BasePlate}
+\caption{Atuadores e seringas fixados à base de alumínio.}
+\label{fig:baseAluminio}
+\end{figure}
+
+Os tubos dos atuadores lineares são muito grossos para entrarem nas seringas, de modo que foi projetado um conector entre as extremidades dos atuadores lineares e os êmbolos das seringas. 
+Um entalhe foi usinado na extremidade desses conectores para conectá-los de forma rígida aos êmbolos das seringas. 
+Os atuadores lineares são unidos aos conectores por meio de conexão clevis, onde foi usado um pino de aço para unir as duas partes. Para se garantir uma conexão firme, os orifícios dos conectores foram deslocados a 0,01 polegadas de distância dos furos dos atuadores. 
+Foi feito um chanfro nos pinos de aço e as peças foram montadas com o uso de um martelo de borracha. 
+Os conectores e as conexões do tipo clevis podem ser vistos nas figuras \ref{fig:conector} e \ref{fig:clevis}.
+
+Um problema enfrentado era que os tubos de extensão dos atuadores costumavam girar, fazendo com que o movimento rotacional gerado pelo motor elétrico não fosse totalmente convertido em movimento linear. Por isso, foi projetada uma estrutura que pode ser anexada aos pinos das conexões do tipo clevis para evitar a rotação indesejada. Essas estruturas foram impressas usando as impressoras 3D do departamento de engenharia mecânica da UW. Elas também podem ser vistas nas figuras \ref{fig:conector} e \ref{fig:clevis}. 
+
+\newpage
+\begin{figure}[h!]
+\centering
+\includegraphics[width=.7\textwidth, angle=270]{figs/Connector}
+\caption{Conector do atuador ao êmbolo da seringa.}
+\label{fig:conector}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\includegraphics[width=.6\textwidth]{figs/Clevis}
+\caption{Conexão do tipo Clevis entre o atuador e o conector ao êmbolo da seringa.}
+\label{fig:clevis}
+\end{figure}
+
+Todas as peças de alumínio e aço foram usinadas nos tornos e fresas CNC da oficina do Colégio de Engenharia da UW.
+
+\section{Fixação dos Sensores}
+
+Os sensores a serem fixados são os sensores de limite ópticos e os encoders. Os sensores de pressão já possuem conectores que podem ser ligados diretamente a tubulação médica na saída da seringa.
+
+Optou-se por fixar os sensores de limite por meio de ranhura em T, permitindo o movimento dos sensores na direção de injeção para ajuste da posição dos sensores. As estruturas com ranhura em T foram impressas por uma impressora 3D. A fixação de um dos sensores pode ser vista na figura \ref{fig:sensorLimite}. Acrescentou-se uma aba para o acionamento dos sensores na estrutura ligada ao pino de aço, conforme pode ser visto na figura \ref{fig:clevis}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=.6\textwidth]{figs/LimitSwitcher}
+\caption{Montagem de um sensor de limite de posição óptico.}
+\label{fig:sensorLimite}
+\end{figure}
+
+A fixação dos encoders foi mais complexa. Decidiu-se conectar os encoders a um pino branco que sai da caixa de engrenagens do atuador. Para acessar esse pino, foi preciso remover a tampa de metal do atuador. Assim, optou-se por projetar uma estrutura de fixação para os encoders capaz de substituir a tampa dos atuadores. Notou-se também que esse pino branco apresenta um pequeno desalinhamento de rotação em relação ao seu centro, o que pode causar problemas para o encoder. Por isso, acoplou-se um compensador de desalinhamento á conexão.
+
+Para o projeto da estrutura de fixação, a tampa do atuador foi escaneada por um sistema de Micro-CT escâner Metrotom 800, do fabricante Zeiss Industrial Metrology. Uma foto da peça dentro do escâner pode ser vista na figura \ref{fig:scan}. Com base no arquivo do tipo stl gerado, criou-se um modelo para a nova tampa no programa SolidWorks. As estruturas impressas podem ser vistas na figura \ref{fig:encoder}, onde também pode ser visto o conector do encoder que compensa o desalinhamento do pino branco.
+\newpage
+\begin{figure}[h!]
+\centering
+\includegraphics[width=.6\textwidth]{figs/MicroCTScanner}
+\caption{Foto da tampa do atuador linear dentro do Micro-CT escâner.}
+\label{fig:scan}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{figs/Encoder1}
+  %\caption{Cart with the adaptations.}
+  %\label{fig:cart}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{figs/Encoder2}
+  %\caption{Cart without the adaptations.}
+  %\label{fig:origCart}
+\end{subfigure}
+\caption{Estruturas impressas para conexão dos encoders.}
+\label{fig:encoder}
+\end{figure}
 
 
-\section{Escolhas dos componetes}
+\section{Carrinho}
 
+Finalmente, conforme determinado pelos requisitos de projeto, montou-se toda a estrutura em um carrinho. Comprou-se e adaptou-se um carrinho de ferramentas do modelo Excel TC304C-Red 31-Inch Steel Tool Cart. O carrinho comprado sem as adaptações feitas pode ser visto na figura \ref{fig:origCart} e o sistema final pode ser visto na figura \ref{fig:cart}.
 
-\section{Frabricação do sistema}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth, angle=270]{figs/FrontCart}
+  \caption{Carrinho após as adaptações feitas.}
+  \label{fig:cart}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{figs/Cart}
+  \caption{Carrinho comprado sem as adaptações.}
+  \label{fig:origCart}
+\end{subfigure}
+\caption{Cart adapted to carry the Power Injector.}
+\label{fig:CartAdapted}
+\end{figure}
 
+As adaptações mais importantes feitas para o carrinho foram:
+\begin{itemize}
+\item As gavetas foram retiradas para dar mais espaço para dentro da cabine, como pode ser visto na figura \ref{fig:cabine};
+\item A mesa de ferramentas foi removida para dar espaço para a base de alumínio;
+\item Fortaleceu-se o encaixe das rodas ao carrinho pela adição de um bloco de alumínio, pois o carrinho ficou muito pesado após a adição da base de alumínio;%, como pode ser visto na figura \ref{fig:rodas};
+\item A coluna central que segura a base de alumínio foi parafusada à cabine do carrinho, pois ela havia ficado instável após a fixação da base alumínio, como pode ser visto na figura \ref{fig:cabine};
+\item Foram feitos buracos na parte traseira da cabine para o roteamento de fios;
+\item Foram feitos furos na porta da cabine, onde colocou-se o fusível, a porta de alimentação e o interruptor de alimentação do sistema, como pode ser visto na figura \ref{fig:porta};
+\item Os componentes eletrônicos foram parafusados dentro da cabine. As fontes de alimentação na gaveta de baixo, e os cartões do CLP e o amplificador que alimenta os atuadores na gaveta de cima, como pode ser visto na figura \ref{fig:cabine}.
+\end{itemize}
 
+\begin{figure}[h]
+\centering
+\begin{minipage}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth, angle=270]{figs/Cabinet}
+  \captionof{figure}{Parte de dentro da cabine do carrinho.}
+  \label{fig:cabine}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth, angle=270]{figs/Switch}
+  \captionof{figure}{Porta da cabine do carrinho.}
+  \label{fig:porta}
+\end{minipage}
+\end{figure}
+
+%\begin{figure}[h!]
+%\centering
+%\includegraphics[width=.6\textwidth, angle=270]{figs/roda}
+%\caption{Foto do encaixe de uma roda do carrinho.}
+%\label{fig:rodas}
+%\end{figure}
+
+Conforme especificado nos requerimentos da máquina, as seringas devem apontar para baixo durante a injeção e para cima durante o processo de remoção de bolhas. Assim, optou-se por colocar rolamentos na fixação da base de alumínio ao carrinho, permitindo que as seringas possam ficar nas duas posições necessárias. Para facilitar o giro da estrutura, os rolamentos foram fixados entre o centro de massa do injetor com os atuadores completamente retraídos e com os atuadores completamente estendidos. Usinou-se uma peça de aço para a conexão entre os rolamentos. A fixação pode ser vista na figura \ref{fig:rolamentos}.
+
+Desenhos mecânicos das peças usinadas estão em anexo ao fim do relatório.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{figs/Cart_bearings}
+\caption{Fixação do injetor no carrinho.}
+\label{fig:rolamentos}
+\end{figure}
