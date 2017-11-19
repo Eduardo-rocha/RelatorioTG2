@@ -112,6 +112,20 @@ ela foi simulada através do programa {\it Hierarchical Petri net Simulator} (HiP
 
 O sistema precisa de três tipos de sensores, transdutores de pressão, encoders e sensores ópticos.
 
+\subsection{Escolha dos sensores de pressão}
+
+Conforme os requisitos de projeto, transdutores de pressão devem estar presentes na saída das seringas para que o sistema de controle possa garantir que a pressão no sistema nunca ultrapasse a pressão máxima definida pelo usuário. Os transdutores escolhidos devem suportar pressões maiores do que as pressões exercidadas no sistema. Conforme calculado em \cite{article:PSDP}, a máxima força aplicada por um atuador durante uma injeção é de aproximadamente 900 lbf (4003 N). Sabendo que o diâmetro interno das seringas é de 40 mm, pode-se calcular a pressão máxima exercida pelos atuadores, de aproximadamente 460 psi. Assim, optou-se por escolher transdutores que aguentem pelo menos 1000 psi.
+
+Escolheu sensores de pressão do modelo Model A-10 da fabricante WIKA, com faixa de medição de 0 a 1500 psi e saída analógica de 4 a 20 mA. Os sensores utilizados podem ser vistos na figura \ref{fig:transdutores}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = 0.6\textwidth]{figs/transdutores}
+\caption{Sensores de pressão do modelo Model A-10 da fabricante WIKA.}
+\label{fig:transdutores}
+\end{figure}
+
+
 \subsection{Escolha dos encoders}
 
 De forma a garantir que a injeção ocorra de forma correta, o fluxo de injeção é monitorado por encoders incrementais, um para cada atuador. Esses encoders são acoplados a um pino que sai da caixa de engrenagem dos atuadores, que completa uma revolução para cada 0,2 polegadas movidas pelo atuador linear. Assim, é importante que se escolha um encoder que apresente resolução boa o suficiente para a realização do controle do atuador de forma satisfatória, mas que também não ultrapasse o limite de frequência de leitura do cartão da CLP ao qual estará conectado.
@@ -127,20 +141,130 @@ Inicialmente, escolheu-se encoders de 5.000 pulsos por revolução. Logo percebeu-
 
 \begin{figure}[h]
 \centering
-\includegraphics[width = 0.5\linewidth]{figs/encoder}
+\includegraphics[width = 0.5\textwidth]{figs/encoder}
 \caption{Encoder do modelo 847T-DM26-RQ50000 da fabricante Allen-Bradley.}
 \label{fig:enc}
 \end{figure}
 
+\subsection{Escolha dos sensores de limite ópticos}
+
+Esses sensores funcionam como os sensores de limite para os movimentos dos atuadores. Cada atuador deve possuir dois desses sensores, uma que determina a máxima retração e outro a máxima extensão do atuador. Teoricamente, a presença dos encoders seria suficiente para a determinação da posição, mas, por questões de segurança, a presença desses sensores é essencial. Além disso, como o sistema possui encoders incrementais ao invés de absolutos, esses sensores são essenciais para a inicialização das posições dos atuadores.
+
+Escolheu-se os sensores do modelo EE-SX77/87 T-shapped, que atende a todos os requisitos de operação. O formato desse modelo facilita sua montagem em ranhuras em T. Esse sensor aceita alimentação de 24 Volts com saída no mesmo nível da entrada. O sensor escolhido pode ser visto na figura \ref{fig:sensorOptico}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[angle = 270, width = 0.5\textwidth]{figs/sensorLimite}
+\caption{Sensor fotoelétrico do modelo EE-SX77/87 T-shapped.}
+\label{fig:sensorOptico}
+\end{figure}
+
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 \section{Escolha do Controlador e Seus Módulos}
 
+Optou-se pela utilização de um CLP da empresa austríaca B{\&}R, que possui uma parceria com o Mechatronics Laboratory. Assim, todos os módulos utilizados e suporte técnico foram fornecidos pela empresa gratuitamente. Optou-se pelo uso do painel 5PP520, que contem um CLP integrado a uma tela LCD touch de 10.4 polegadas, que funciona como a interface de comunicação com o usuário. O painel 5PP520 pode ser visto na figura \ref{fig:CLP}.
 
+\begin{figure}[h!]
+\centering
+\includegraphics[width = 0.5\textwidth]{figs/CLP}
+\caption{Painel 5PP520, que contém um CLP e monitor LCD touch.}
+\label{fig:CLP}
+\end{figure}
 
+Decidiu-se utilizar os módulos (cartões) da linha X20, que se comunicam por um barramento que utiliza o protocolo X2X fieldbus. Acrescentou-se um módulo de conversão X20BC0083 ao barramento, que comunica-se com a CLP por meio do protocolo Powerlink e também age como a fonte de alimentação do barramento. Ambos protocolos são propriedades da  B{\&}R. Uma boa característica das peças da B{\&}R é que elas se conectam facilmente ao barramento. Os módulos X20 utilizados podem ser vistos na figura \ref{fig:cartoesCLP}, onde o módulo de comunicação encontra-se a esquerda.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = 0.6\textwidth]{figs/cartoesCLP}
+\caption{Módulos do CLP X20 utilizados.}
+\label{fig:cartoesCLP}
+\end{figure}
+
+Para a escolha dos cartões da CLP, precisa-se definir quais são os componentes do sistema que se comunicam com ela, e como essa comunicação ocorre. Um bom método para obter essas informações é a listagem das variáveis de entrada e saída da CLP. A tabela \ref{tab:variaveis} lista todas essas variáveis.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{l|l}
+ Variável & Tipo \\ 
+ \hline 
+ Encoder 1 & Entrada digital tipo encoder AB \\ 
+ Encoder 2 & Entrada digital tipo encoder AB \\ 
+ Sensor de limite extendido 1 & Entrada digital 24V \\ 
+ Sensor de limite retraido 1 & Entrada digital 24V \\ 
+ Sensor de limite extendido 2 & Entrada digital 24V \\ 
+ Sensor de limite retraido 2 & Entrada digital 24V \\ 
+ Sensor de pressão 1 & Entrada analógica 4...20mA \\ 
+ Sensor de pressão 2 & Entrada analógica 4...20mA \\ 
+ Controle do atuador 1 & Saída analógica 0...5V \\ 
+ Controle do atuador 2 & Saída analógica 0...5V \\ 
+ Controle do relé dos atuadores & Saída digital 24V \\ 
+ \end{tabular}  
+ \caption{Lista de variáveis de entrada e saída da CLP.}
+ \label{tab:variaveis}
+\end{table}
+
+Com base na tabela, os cartões necessários foram escolhidos. A configuração completa do sistema de controle pode ser vista na figura \ref{fig:CLPconfig}, onde os cartões de entradas e saídas utilizados estão dentro do barramento X2X. 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = 0.45\textwidth]{figs/CLPconfig}
+\caption{Configuração completa do sistema de controle.}
+\label{fig:CLPconfig}
+\end{figure}
+
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 \section{Diagramas elétricos}
 
+O sistema foi dividido em dois diagramas, um que mostra apenas as conexões entre os sensores e os cartões do CLP e outro para todas as outras conexões (controle do sistema e dos atuadores através de um amplificador). Os diagramas podem ser vistos nas figuras \ref{fig:diagrama1} e \ref{fig:diagrama2} e em anexo ao final do relatório, onde estão em maior escala e possuem tabelas de sinais. 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[angle = 270, width = \textwidth]{figs/Electrical1}
+\caption{Diagrama elétrico 1.}
+\label{fig:diagrama1}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[angle = 270, width = \textwidth]{figs/Electrical2}
+\caption{Diagrama elétrico 2.}
+\label{fig:diagrama2}
+\end{figure}
+
+Em vez de usar o módulo de motor PWM da B{\&}R, optou-se por usar um amplificador Sabertooth 2x60, que é capaz de fornecer até 60A a cada motor. Ele recebe uma entrada analógica de 0 a 5V DC do CLP e fornece uma saída para os motores de -24 a 24V DC. Uma tensão analógica de 2.5V não corresponde a nenhum movimento. Os sinais acima de 2.5V comandam um movimento de extensão e os sinais abaixo de 2.5V comandam um movimento de retração. \cite{saber}
+
+O relé que pode ser visto no diagrama elétrico principal é usado para habilitar o movimento dos atuadores. Recebe um sinal de controle do CLP e corta a alimentação do amplificador quando os motores não devem ser movidos (no modo Stand By e quando o CLP está inicializando).
+
+Notou-se que existe um ao alto consumo de corrente dos atuadores. Um dos atuadores apresenta motor com resistência de circuito da armadura de 0,5$\Omega$, gerando picos de corrente contínua muito altos durante o movimento de partida do motor.
+Assim, optou-se pela utilização de duas fontes de alimentação, uma exclusivamente para a alimentação dos atuadores e outra para o restante do sistema.
+
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 \section{Tela de Supervisório e Interface de Usuário}
 
+O usuário comunica-se com o sistema através da tela LCD integrada ao CLP, onde o controlador mostra as informações atuais do sistema e o usuário consegue interagir com o controlador, selecionando o modo de operação atual e definindo parâmetros de injeção. As páginas da interface foram feitas com o programa  Automation Studio da B{\&}R, onde elas podem ser diretamente integradas aos programas do controlador. Todas as páginas desenvolvidas podem ser vistas em anexo ao fim do relatório. 
+
+Uma das páginas pode ser vista na figura \ref{fig:pagInjecao}, a página mostrada durante os procedimentos de injeções. Os quadrados verdes no canto superior da página indicam que os dois eixos estão inicializados e não apresentam erros, eles ficam vermelhos caso contrário. Esses quadrados estão presentes em todas as páginas. A mensagem "Max Pressure Reached"  aparece somente quando a pressão em algum dos eixos ultrapassou a pressão máxima definida pelo usuário. O gráfico mostra o fluxo de injeção em tempo real dos dois eixos.
+ A página também mostra o nível de fluido e pressão lida nas duas seringas.
+ 
+ \begin{figure}[h!]
+\centering
+\includegraphics[width = .7\textwidth]{figs/InjePage}
+\caption{Página mostrada na tela LCD durante os procedimentos de injeções.}
+\label{fig:pagInjecao}
+\end{figure}
+
+
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 \section{Controle dos Atuadores}
 
+\section{Configuração de Hardware da CLP}
 
 
