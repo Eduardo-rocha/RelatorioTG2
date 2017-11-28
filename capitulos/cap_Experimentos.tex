@@ -3,33 +3,181 @@
 \chapter{Resultados Experimentais}\label{CapExperimentos}
 
 % Resumo opcional. Comentar se não usar.
-\resumodocapitulo{Resumo opcional.}
+%\resumodocapitulo{Resumo opcional.}
 
 \section{Introdução}
 
-Na introdução deverá ser feita uma descrição geral dos experimentos realizados. 
+Diversos testes foram realizados para a verificação do correto comportamento da máquina. Primeiramente, testou-se a interface de usuário e os modos de operação Manual e Enchimento. Em seguida, realizou-se injeções com todos os perfis de fluxo programados. Testou-se também o controle de pressão implementado. Finalmente, verificou-se o uso da CPU durante a utilização da máquina para garantir que a CLP não está sobrecarregada. 
 
-Para cada experimentação apresentada, descrever as condições de experimentação (e.g., instrumentos, ligações específicas, configurações dos programas), os resultados obtidos na forma de tabelas, curvas ou gráficos. Por fim, tão importante quando ter os resultados é a análise que se faz deles. Quando os resultados obtidos não forem como esperados, procurar justificar e/ou propor alteração na teoria de forma a justificá-los.
+\section{Teste dos Perfis de Injeção}
 
-\section{Avaliação do algoritmo de resolução da equação algébrica de Riccati}
+Foram realizadas injeções com todos os perfis de fluxo programados. Essa injeções foram realizadas com agente de contraste Omnipaque com concentração de 300 miligramas de iodo por mililitro à temperatura ambiente de aproximadamente $20^o$C. Os dois eixos foram testados ao mesmo tempo. Como os resultados para os dois eixos foram praticamente idênticos, optou-se por apresentar os gráficos obtidos apenas para o eixo 1 (vermelho).
 
-O algoritmo proposto para solução da equação algébrica de Riccati foi avaliado em diferentes máquinas. Os tempos de execução são mostrados na Tabela \ref{TabDesempenho}. Nesta tabela, os algoritmos propostos receberam a denominação $CH$ para Chandrasekhar e $CH+LYAP$ para Chandrasekhar com Lyapunov. As implementações foram feitas em linguagem \textit{script} MATLAB.
+\subsection{Sinal Senoidal}
 
-\begin{table}[tbp]
-\caption{Tempos de execução em segundos para diferentes máquinas}
-\label{TabDesempenho}
-\begin{center}
-\begin{tabular}{c|c|c|c|c}
-\hline
-\textbf{Algoritmo} & \textbf{Laptop} & \textbf{Desktop} & \textbf{Desktop} & 
-\textbf{Laptop} \\ 
-& \textbf{1.8 GHz} & \textbf{PIII 850 MHz} & \textbf{MMX 233} & \textbf{600
-MHz} \\ \hline
-Matlab ARE & 649,96 & 1.857,5 & 7.450,5 & 9.063,9 \\ 
-$CH$ & 259,44 & 606,4 & 2.436,5 & 2.588,5 \\ 
-$CH+LYAP$ & 357,86 & 952,9 & 3.689,2 & 3.875,0 \\ \hline
-\end{tabular}
-\end{center}
-\end{table}
+Parâmetros da injeção realizada: offset de 4 mL/s, amplitude de 3 mL/s e frequência de 0,5 Hz. O perfil de velocidade da injeção pode ser visto na figura \ref{fig:senoidal}, onde pode-se ver a referência (entrada do sistema de controle) e o valor de velocidade lido. O erro de posição, entre a posição esperada e a lida, pode ser visto na figura \ref{fig:senoidalErro}.
 
-Observa-se que o algoritmo $CH+LYAP$ apresenta tempos de execução superiores com relação ao algoritmo $CH$. Entretanto, era esperado que o algoritmo $CH$ fosse mais rápido. Este resultado se justifica pelo fato de o algoritmo $CH$ fazer uso de funções embutidas do MATLAB. Já o aloritmo $CH+LYAP$ faz uso também de funções \textit{script} externas, aumentando bastante seu tempo computacional.
+Pode-se ver na figura \ref{fig:senoidalErro} que o erro máximo é muito pequeno, não passa de 0,1 mm. O valor de velocidade lido praticamente se sobrepõe ao valor de referência. Por isso, considerou-se o resultado como satisfatório. Pode-se observar que o valor lido apresenta um ruído relativamente grande. Isso ocorre porque o valor mostrado no gráfico é o valor que provem direto da derivação do sinal do encoder, sem a aplicação de nenhum filtro. Essa afirmação vale para todos os gráficos de velocidade desse capítulo.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/senoidal}
+\caption{Perfil de velocidade de injeção para sinal senoidal.}
+\label{fig:senoidal}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/senoidalErro}
+\caption{Erro de posição para injeção com perfil senoidal.}
+\label{fig:senoidalErro}
+\end{figure}
+
+\subsection{Sinal de Onda Quadrada e Resposta do Controlador PID}
+
+Parâmetros de injeção: offset de 4 mL/s, amplitude de 3 mL/s, frequência de 0,5 Hz e ciclo de trabalho de 25\%. O perfil de velocidade da injeção pode ser visto na figura \ref{fig:quadrada}, onde pode-se ver a referência (entrada do sistema de controle) e o valor de velocidade lido. O erro de posição, entre a posição esperada e a lida, pode ser visto na figura \ref{fig:quadradaErro}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/quadrada}
+\caption{Perfil de velocidade de injeção para sinal de onda quadrada.}
+\label{fig:quadrada}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/quadradaErro}
+\caption{Erro de posição para injeção com perfil de onda quadrada.}
+\label{fig:quadradaErro}
+\end{figure}
+
+A resposta do controlador para uma resposta degrau pode ser vista nessas figuras. Pode-se ver que o controlador obedece os requisitos de projeto, sobre-sinal máximo de 15\% e tempo de acomodação máximo de 0,3 s. Ao se multiplicar as funções de transferência do controlador, da planta e do derivador na saída da planta, obtem-se um sistema do tipo 1, onde espera-se um erro de regime permanente nulo para uma entrada do tipo degrau. Isso pode ser visto no gráfico do erro de posição. Pode-se observar que o erro de posição permanece constante quando em regime permanente. Ou seja, a velocidade de referência e a velocidade lida são iguais, o erro entre as velocidades é nulo.
+
+\subsection{Sinal Chirp}
+
+Duas injeções foram realizadas, uma para testar uma variação de frequência linear e outra para uma variação exponencial. Os parâmetros de injeção para a injeção com variação exponencial foram: offset de 4 mL/s, amplitude de 3 mL/s, frequência inicial de 0,25 Hz e frequência final de 1Hz. Os parâmetros de injeção para a injeção com variação linear foram: offset de 4 mL/s, amplitude de 3 mL/s, frequência inicial de 0,25 Hz e frequência final de 2Hz. Os resultados obtidos podem ser vistos nas figuras \ref{fig:chirpExp} e \ref{fig:chirpLinear}. 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/chirpExp}
+\caption{Perfil de velocidade de injeção para sinal chirp exponencial.}
+\label{fig:chirpExp}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/chirpLinear}
+\caption{Perfil de velocidade de injeção para sinal chirp linear.}
+\label{fig:chirpLinear}
+\end{figure}
+
+O erro de posição máximo para o chirp exponencial foi de 0,09 mm e para o chirp linear foi de 0,12 mm. Conforme esperado, quanto maior a frequência do sinal, maior é o erro encontrado. Isso pode ser claramente observado no sinal com a variação de frequência linear. Conforme a frequência aumentou, a amplitude do sinal também aumentou. Considerou-se os resultados como satisfatórios.
+
+\subsection{Sinal de Ruído Branco}
+
+Parâmetros de injeção: offset de 4 mL/s e desvio padrão de 0,1 mL/s. O perfil de velocidade da injeção pode ser visto na figura \ref{fig:ruido}, onde pode-se ver a referência (entrada do sistema de controle) e o valor de velocidade lido.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/ruido}
+\caption{Perfil de velocidade de injeção para sinal de ruído branco.}
+\label{fig:ruido}
+\end{figure}
+
+Fez-se um gráfico do histograma do sinal de velocidade lido para uma injeção mais longa, de 30 s, com offset de 4 mL/s e desvio padrão de 0,4 mL/s, que pode ser visto na figura \ref{fig:ruidoHistograma}. Conforme esperado, o gráfico é a aproximação de uma distribuição normal com média de 3 mm/s e desvio padrão de 0,33 mm/s. Espera-se que quanto maior o número de amostras, mais próximo de uma distribuição normal ele será. Considerou-se o resultado como satisfatório.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/ruidoHistograma}
+\caption{Histograma do sinal de velocidade lido.}
+\label{fig:ruidoHistograma}
+\end{figure}
+
+\subsection{Sinal de Simulação de Fluxo Sanguíneo}
+
+Parâmetros de injeção: offset de 0 mL/s, frequência de ciclo cardíaco de 2 Hz e período se sístole de 0,2 s. O perfil de velocidade da injeção pode ser visto na figura \ref{fig:sangue}, onde pode-se ver a referência (entrada do sistema de controle) e o valor de velocidade lido. O erro de posição, entre a posição esperada e a lida, pode ser visto na figura \ref{fig:sangueErro}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/sangue}
+\caption{Perfil de velocidade de injeção para sinal de simulação de fluxo sanguíneo.}
+\label{fig:sangue}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/sangueErro}
+\caption{Erro de posição para injeção com sinal de simulação de fluxo sanguíneo.}
+\label{fig:sangueErro}
+\end{figure}
+
+Pode-se ver que o sinal lido teve um atraso significativo em relação ao sinal de referência, mas esse atraso era esperado, pois a aceleração da referência é tão grande que é possível se observar a discretização do sinal em 0,01 s. Considerou-se o resultado como satisfatório.
+
+\subsection{Sinal com Janelas Hamming e Hanning}
+
+Para testar as janelas, aplicou-se  a janela Hamming para um sinal de onda senoidal e a janela Hanning para um sinal de onda quadrada. Vale ressaltar que essas injeções foram feitas apenas para testar as janelas. Na prática, os sinais teriam frequência e tempo de duração maiores. os resultados podem ser vistos nas figuras \ref{fig:hamm} e \ref{fig:hann} e foram considerados como satisfatórios.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/hamm}
+\caption{Perfil de velocidade de injeção para sinal senoidal com janela Hamming.}
+\label{fig:hamm}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/hann}
+\caption{Perfil de velocidade de injeção para sinal de onda quadrada com janela Hanning.}
+\label{fig:hann}
+\end{figure}
+
+\section{Teste do Controle de Pressão}
+
+Para o teste do controle de pressão, precisa-se que a pressão lida ultrapasse a pressão máxima definida em algum ponto do teste. Isso é complicado de ser feito sem que se bloqueie o fluxo de fluido da seringa, mas, como o processo de injeção envolve a aplicação de altas forças pelo atuador, o bloqueio da seringa pode ser perigoso e causar danos ao sistema. Por isso, optou-se por ligar os sensores de pressão em uma mangueira de ar comprimido, onde a pressão pode ser facilmente variada. O teste consistiu da variação da pressão da mangueira durante a aplicação de injeções. A montagem de um dos sensores à mangueira de ar comprimido pode ser vista na figura \ref{fig:mangueira}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[angle = 270, width = 0.6\textwidth]{figs/mangueira}
+\caption{Conexão de um sensor de pressão à mangueira de ar comprimido.}
+\label{fig:mangueira}
+\end{figure}
+
+Primeiramente, testou-se o método que para a injeção quando a pressão máxima definida é atingida. O resultado de um dos testes pode ser visto na figura \ref{fig:CPparar} e foi considerado como satisfatório. O tempo de injeção foi definido para 10 s, mas quando a pressão ultrapassa esse limite, em aproximadamente $t$ = 4,3 s, a injeção para imediatamente.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/CP_parar}
+\caption{Teste do controle de pressão para o método que para o procedimento.}
+\label{fig:CPparar}
+\end{figure}
+
+Para o outro método, quando a pressão ultrapassa a pressão máxima definida, o fluxo cai linearmente de acordo com uma taxa definida pelo usuário. Quando a pressão lida volta a ser menor do que o limite definido, o fluxo para de cair mantém se constante até que a velocidade do perfil de injeção seja menor do que a velocidade atual, onde o fluxo volta a seguir o fluxo do perfil de injeção. Dois testes podem ser vistos nas figuras \ref{fig:CP05} e \ref{fig:CP1}. Os resultados encontrados foram considerados satisfatórios.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/CP05}
+\caption{Teste do controle de pressão para o método de decaimento linear de 0,5 mL/$s^2$.}
+\label{fig:CP05}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/CP1}
+\caption{Teste do controle de pressão para o método de decaimento linear de 1 mL/$s^2$.}
+\label{fig:CP1}
+\end{figure}
+
+No primeiro teste, figura \ref{fig:CP05}, a pressão ultrapassa a pressão limite em aproximadamente $t$ = 4,2 s e volta para um valor abaixo desse limite em aproximadamente $t$ = 6,5 s. Pode-se observar que, em aproximadamente $t$ = 6 s, a pressão ainda está acima do limite definido, mas como a velocidade do perfil de injeção é menor do que a velocidade definida pelo decaimento, o atuador passa a seguir a velocidade do perfil de injeção.
+
+No segundo teste, figura \ref{fig:CP1}, a pressão ultrapassa a pressão limite em aproximadamente $t$ = 4,2 s e volta para um valor abaixo desse limite em aproximadamente $t$ = 7,6 s. Como, após esse ponto, a velocidade do perfil de injeção nunca é menor do que a velocidade atual, a velocidade do atuador mantém-se constante até o fim do tempo de injeção. 
+
+\section{Teste de Uso da CPU}
+
+Outro teste realizado foi o teste de uso da CPU do controlador, de forma a se garantir que o CLP não estava sendo sobrecarregado. A partir das ferramentas encontradas no AS, testou-se o uso da CPU para todos os modos de operação. Obteve-se o maior uso quando em modo de injeção, pois o controlador precisa calcular as velocidades dos perfis de injeção. Porém, ainda nesse caso, o uso foi muito baixo, conforme mostra a figura \ref{fig:CPU}. Pode-se ver na figura que mais de 80\% do uso da CPU ocorre com as {\it Idle tasks}, que só são executadas quando o controlador não está sendo utilizado por nenhuma das outras tarefas.
+ Isso pode ser explicado pelo fato de que todos os programas que rodam no CLP são tarefas cíclicas, nenhuma é contínua, e a maioria dessas tarefas possuem frequências de execução muito baixas, de até 10 Hz, como pode ser visto na configuração de hardware do controlador. Assim, descartou-se a possibilidade de o controlador estar sobrecarregado.
+ 
+ \begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/CPU}
+\caption{Uso da CPU do CLP durante um processo de injeção.}
+\label{fig:CPU}
+\end{figure}
+
+\section{Uso da Bomba de Injeção no WIMR}
+
+Após a finalização da máquina em Setembro de 2017, ela vem sendo utilizada constantemente no WIMR. Até hoje a bomba injetora não apresentou nenhum defeito e funciona corretamente.

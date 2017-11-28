@@ -3,19 +3,112 @@
 \chapter{Introdução}\label{CapIntro}
 
 % Resumo opcional. Comentar se não usar.
-\resumodocapitulo{Este capítulo apresenta a principal motivação do trabalho de graduação. Os objetivos são claramente apresentados, visando assim satisfazer um conjunto de características prescritas para este trabalho. Por fim, o manuscrito é apresentado. (Este resumo é opcional)}
+%\resumodocapitulo{Este capítulo apresenta a principal motivação do trabalho de graduação. Os objetivos são claramente apresentados, visando assim satisfazer um conjunto de características prescritas para este trabalho. Por fim, o manuscrito é apresentado. (Este resumo é opcional)}
 
 \section{Contextualização}
 
-Em geral, na introdução que é feita a contextualização do trabalho. Aspectos importantes tais como motivação e relevância do tema escolhido devem ficar claros.
+O Trabalho consiste da construção de uma bomba injetora de contraste para uso em neuroangiografia 4D no Wisconsin Institute for Medical Research (WIMR). 
+A bomba construída é usada pelo grupo de pesquisa que é liderado pelo professor Charles Mistretta e conta com os fundos disponíveis no grupo para a compra de peças.
+O trabalho foi feito no Mechatronics Laboratory sob a supervisão do professor Erick Oberstar, na University of Wisconsin-Madison. Teve-se acesso a todos os recursos disponíveis no departamento de engenharia mecânica da universidade, como o laboratório de impressoras 3D, as oficinas do colégio de engenharia e o uso do Micro-CT scanner do laboratório de metrologia. 
 
-\section{Definição e objetivos do problema}
+Angiografia é uma técnica utilizada para se enxergar o interior de vasos sanguíneos e órgãos pelo uso de contraste radiopaco, que é injetado no ambiente intravascular. Neuroangiografia, ou angiografia cerebral, é uma subcategoria de angiografia que fornece imagens dos vasos sanguíneos no cérebro e ao redor dele. É uma técnica muito importante utilizada para a detecção de doenças e anomalias cerebrais. \cite{angiografia}
 
-Aqui o problema é definido, deve-se deixar claro quais são os objetivos do projeto.ZZ
+O processo de neuroangiografia é composto de várias etapas, mas pode ser descrito de forma simples por três etapas básicas. Primeiramente, obtêm-se uma imagem radiográfica do paciente antes da injeção do agente de contraste. Em seguida, obtem-se outra imagem após a injeção do agente. Finalmente, subtrai-se a primeira imagem da segunda para se obter uma imagem apenas dos vasos sanguíneos. Um exemplo de imagem obtida por meio de neuroangiografia pode ser visto na figura \ref{fig:angiografia}. 
 
-\section{Apresentação do manuscrito}
+\begin{figure}[h!]
+\centering
+\includegraphics[width = .6\textwidth]{figs/angiografia}
+\caption{Exemplo de imagem obtida por neuroangiografia.}
+\label{fig:angiografia}
+\end{figure}
 
-No capítulo \ref{CapRevisaoBibliografica} é feita uma revisão bibliográfica sobre o tema de estudo. Em seguida, o capítulo \ref{CapDesenvolvimento} descreve a metodologia empregada no desenvolvimento do projeto. Resultados experimentais são discutidos no capítulo \ref{CapExperimentos}, seguido das conclusões no capítulo \ref{CapConclusoes}. Os anexos contém material complementar.
+Atualmente, existem dois tipos principais de angiografia, angiografia CT ({\it{computed tomography angiography}} - CTA) e angiografia MR ({\it{magnectic resonance angiography}} - MRA). Esse projeto utiliza principalmente angiografia por tomografia computadorizada, CTA, que é capaz de gerar modelos tridimensionais pela aquisição de várias imagens em vários ângulos diferentes e consiste do uso de imagens de raio-X processadas computacionalmente. 
+
+
+Angiografias 4D consistem da obtenção de várias imagens 3D durante a injeção do agente de contraste com objetivo de documentar mudanças no domínio do tempo. Esse é um método muito mais completo, onde mais informações podem ser extraídas, como, por exemplo, o fluxo sanguíneo dentro dos vasos. Um exemplo obtido por meio de angiografia 4D da artéria aorta pode ser visto na figura \ref{fig:angiografia4D}, onde pode ser visto a velocidade do sangue dentro da artéria em determinado instante. \cite{Hope3221}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = .35\textwidth]{figs/angiografia4D}
+\caption{Exemplo de imagem obtida da artéria aorta por angiografia 4D \cite{Hope3221}.}
+\label{fig:angiografia4D}
+\end{figure}
+
+\section{Justificativa do Projeto}
+
+As bombas de injeção disponíveis comercialmente só são capazes de realizar injeções com fluxo de fluido constante, diferente do fluxo da corrente sanguínea que é variado. O fluxo sanguíneo dentro de uma artéria pode ser dividido em duas partes, sístole e diástole. A sístole corresponde ao período onde ocorre a contração ventricular, onde o sangue é empurrado para fora dos ventrículos do coração, e a diástole corresponde ao relaxamento ventricular, onde o sangue entra nos ventrículos. A figura \ref{fig:sang} mostra como o fluxo sanguíneo varia nas artérias, onde o período I corresponde à sístole e o II à diástole. \cite{bloodFlow}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = .4\textwidth]{figs/sang}
+\caption{Variação do fluxo sanguíneo em uma artéria \cite{bloodFlow}.}
+\label{fig:sang}
+\end{figure}
+
+Assim, o grupo de pesquisa liderado pelo professor Charles Mistretta tem o interesse no estudo da aplicação de diferentes perfis de injeção de contraste em neuroangiografia 4D além da injeção com fluxo constante. Esses perfis de injeção consistem de sinais senoidais, sinais de onda quadrada, sinal de simulação de fluxo sanguíneo, etc. Esses sinais acompanhariam o fluxo sanguíneo dentro da artéria, com mesma frequência e fase. Como as bombas disponíveis no mercado não atendem à essas demandas, o grupo optou pela construção de uma nova bomba de injeção, que ficou de responsabilidade do professor Erick Oberstar no Mechatronics Laboratory na University of Wisconsin-Madison. 
+
+De acordo com o grupo de pesquisa, esse estudo consistiria primeiramente de simulações, onde o processo de neuroangiografia 4D seria aplicado em corpos de simulação. Esses corpos consistem de estruturas gelatinosas com tubos que possuem as mesmas propriedades físicas de vasos sanguíneos. Com a obtenção de bons resultados nessa primeira etapa, o estudo passaria para uma nova etapa onde ocorreria aplicações do processo em seres vivos. Primeiramente, em cachorros em estado de saúde terminal e, posteriormente, em seres humanos. 
+
+Vale ressaltar que, como a bomba a ser construida será utilizada para esses processos de simulação, ela deve possuir dois eixos, um para a injeção do contraste e outro para a simulação do fluxo sanguíneo. 
+
+Uma justificativa secundária para a construção dessa bomba é o estudo e modelagem das propriedades físicas de vasos sanguíneos. Esse estudo consistiria de aplicações de injeções com sinais de frequência variada (sinais de varredura) e sinais de ruído branco para a obtenção de modelos que descrevem o sistema.
+
+\section{Trabalhos Passados}
+
+Quatro alunos de graduação em engenharia mecânica da University of Wisconsin-Madison construíram um protótipo dessa máquina como trabalho de graduação, mas o protótipo construído apresentou diversos problemas e não funcionou. 
+O protótipo, que pode ser visto na figura \ref{fig:PSDP}, consistiu de dois atuadores e duas seringas presos à uma peça de madeira, onde a velocidade dos atuadores eram controladas por potenciômetros. Os atuadores escolhidos não apresentavam força suficiente devido à alta viscosidade do agente de contraste e a peça de madeira não aguentou os esforços exercidos sobre ela. 
+O protótipo construído serviu como uma base inicial para o projeto e os erros serviram de lição para a construção da atual máquina. \cite{article:PSDP}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = .6\textwidth]{figs/PSDP}
+\caption{Protótipo construido por alunos de graduação da University of Wisconsin-Madison.}
+\label{fig:PSDP}
+\end{figure}
+
+\section{Definição e Objetivos do Problema}
+
+O objetivo do trabalho é a construção de uma bomba de injeção médica. A função desta bomba é a injeção de agentes de contraste durante neuroangiografia. O injetor é constituído por um mecanismo ao qual duas seringas podem ser conectadas, e então uma força será aplicada ao êmbolo para produzir o perfil de fluxo de fluido desejado. Os parâmetros de injeção são definidos pelo usuário e a máquina deve calcular e aplicar a tensão necessária aos atuadores para que o perfil desejado possa ser alcançado. A máquina foi construída para satisfazer todos os requisitos abaixo.
+
+Os atuadores e as seringas devem ser alinhados axialmente para garantir que as forças sejam transmitidas corretamente e com segurança. Para eliminar o impacto das bolhas de ar, as seringas devem estar na posição vertical durante a operação, voltadas para cima quando no procedimento de enchimento e voltadas para baixo quando em processo de injeção. Assim, os atuadores e montagem das seringas devem ser capazes de girar no eixo perpendicular à direção das seringas. Uma vez que se espera que a máquina seja pesada, a montagem deve ser incorporada a um carrinho para facilitar o transporte e o armazenamento. Todas as peças eletrônicas devem estar em um compartimento fechado. 
+
+O injetor deve ter um sistema de controle de pressão. A pressão deve ser medida nas pontas das seringas e, se exceder um limite definido pelo usuário, o sistema deve responder conforme especificado pelo usuário, parar completamente a injeção ou diminuir o fluxo linearmente por uma taxa especificada pelo usuário até que a pressão vá abaixo da limite especificado.
+
+Três modos de operação devem ser implementados: modo manual, modo de enchimento e modo de Injeção. Além disso, um modo stand-by deve ser implementado. Descrição dos modos:
+\begin{itemize}
+\item {\bf Modo manual:} o usuário deve ser capaz de definir uma velocidade constante com a qual ele pode mover os êmbolos para frente e para trás pressionando os botões na interface do usuário. 
+\item {\bf Modo de enchimento:} o usuário deve ser capaz de definir os volumes de enchimento que o sistema irá preencher automaticamente as seringas quando o botão de enchimento for pressionado. Além disso, uma funcionalidade para retirar bolhas ({\it{prime}}) deve ser implementada. O êmbolo deve avançar lentamente enquanto o botão {\it{prime}} está sendo pressionado.
+\item {\bf Modo de injeção:} o usuário deve ser capaz de realizar injeções com sinais de frequência constante para perfis de onda senoidal e quadrada. Alguns modos especiais de injeção devem ser implementados: sinal senoidal de frequência variada (chirp linear e exponencial), sinal de simulação de fluxo sanguíneo e sinal de ruído branco. Cada um desses modos é explicado mais a frente. O usuário também deve ser capaz de aplicar janelas Hamming e Hanning aos sinais.
+O usuário deve poder inserir os seguintes parâmetros:
+	\begin{itemize}
+      \item Offset DC dos sinais;
+      \item Amplitude de pico dos sinais;
+      \item Ciclo de trabalho para ondas quadradas;
+      \item Frequência para sinais de frequência constante;
+      \item Tipo de janela à ser aplicada ao sinal (retangular, Hamming ou Hanning);
+      \item Tempo de duração da injeção
+      \item Tempo de atraso, que é o tempo para a injeção começar após o botão de início ser pressionado;
+      \item Frequência inicial e final para sinais com frequência variada;
+      \item Período do ciclo cardíaco e período de sístole para sinal de simulação de fluxo sanguíneo.
+      \item Desvio padrão para sinais de ruído branco.
+    \end{itemize}
+\item {\bf Modo stand-by:} o sistema deve ser colocado em espera. A alimentação dos atuadores deve ser desativada sem que o usuário tenha que desligar a máquina.
+\end{itemize}
+
+
+
+
+
+
+
+
+ 
+
+\section{Apresentação do Manuscrito}
+
+O capítulo 2 descreve o projeto mecânico e construção da máquina. Em seguida, o capítulo 3 descreve o projeto de automação do sistema.
+O capítulo 4 descreve o  projeto dos controladores de velocidade dos atuadores e o capítulo 5 descreve a modelagem dos perfis de injeção. O capítulo 6 descreve a programação do CLP. 
+Os resultados experimentais são discutidos no capítulo \ref{CapExperimentos} e as conclusões no capítulo \ref{CapConclusoes}. Os anexos contém material complementar.
 
  
 

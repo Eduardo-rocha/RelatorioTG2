@@ -1,29 +1,278 @@
 %TCIDATA{LaTeXparent=0,0,relatorio.tex}
-                      
+\chapter{Modelagem dos Perfis de Injeção}
+
+Conforme os requisitos de projeto, a bomba de injeção deve ser capaz de implementar sinais senoidais e de onda quadrada com frequência constante e alguns modos especiais de injeção. Além disso, ele deve poder aplicar as janelas retangular, Hamming e Hanning ao sinal. Esta seção descreve como todos esses sinais foram implementados no domínio de tempo discreto para que eles possam ser implementados na CLP.
+
+\section{Sinal Senoidal}
+
+Um sinal senoidal com frequência constante pode ser descrito em tempo discreto por
+\begin{equation}
+g[k] = \text{DC offset} + \text{Amplitude} \cdot sen(\phi_0 + 2\pi f k), \qquad k = 1,2,3,...
+\label{eq:sinCF}
+\end{equation}
+onde $\phi_0$ é a fase inicial e $f$ é a frequência do sinal. A equação (\ref{eq:sinCF}) não funciona para sinais de frequência variada porque uma compensação de fase deve ser feita.
+
+\section{Sinal de Frequência Variada}
+
+Um sinal de frequência variada, também chamado de chirp ou sinal de varredura, é um sinal no qual a frequência varia com o tempo. A máquina deve implementar os dois tipos mais importantes desses sinais, lineares e exponenciais. Em um chirp linear, a frequência instantânea varia linearmente com o tempo. Em um exponencial, a frequência do sinal varia exponencialmente como função do tempo. Um sinal de frequência variada exponencial pode ser visto na figura \ref{fig:chirp}. ~\cite{chirp}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = \textwidth]{figs/chirp}
+\caption{Sinal de frequência variada exponencialmente.}
+\label{fig:chirp}
+\end{figure}
+
+A frequência de um chirp linear pode ser descrita pela equação de uma linha reta. Assim, no domínio do tempo contínuo,
+\begin{equation}
+f(t) = f_0 + k(t-t_0)
+\end{equation}
+onde $f_0$ é a frequência inicial no tempo inicial $t_0$ e $k$ é a taxa de crescimento (ou decrescimento), que pode ser descrita por
+\begin{equation}
+k = (f_1 - f_0)/T,
+\end{equation}
+onde $T$ é a duração do sinal e $f_1$ é a frequência final em $T+t_0$. Em tempo discreto,
+\begin{equation}
+f[i] = f_0 + \frac{f_1 - f_0}{T}(i\cdot T_s-t_0), \qquad i = 0,1,2,3,4,...
+\end{equation}
+onde $T_s$ é o tempo de amostragem.
+
+A frequência de um chirp exponencial pode ser descrita como
+\begin{equation}
+f(t) = f_0 \cdot e^{{ln(f_1/f_0)}(t-t_0)/T} \rightarrow f(t) = f_0 \left( \frac{f_1}{f_0} \right)^{(t-t_0)/T}.
+\end{equation}
+Em tempo discreto,
+\begin{equation}
+f[i] = f_0 \left( \frac{f_1}{f_0} \right)^{(i\cdot T_s-t_0)/T}, \qquad i = 0,1,2,3,4,...
+\end{equation}
+
+Para uma mudança de frequência em sinal discreto, a fase $\phi$ do sinal pode ser calculada como
+\begin{equation}
+\phi[k+1] = \phi[k] + 2\pi f[k+1]\cdot T_s ,
+\label{eq:phase}
+\end{equation}
+onde $T_s$ é o tempo de amostragem. Assim, para gerar um chirp senoidal, a fase do sinal pode ser calculada utilizando a equação (\ref{eq:phase}), e então o sinal pode ser gerado por
+\begin{equation}
+g[k] = \text{DC offset} + \text{Amplitude} \cdot sen(\phi[k]).
+\label{eq:sin}
+\end{equation}
+
+Decidiu-se utilizar $\phi_0 = 0$.
+
+\section{Sinal de Onda Quadrada}
+
+Uma função que dá a posição de um tempo $t$ dentro de um período de um sinal periódico com frequência $f$ a qualquer momento em porcentagem, assumindo que o primeiro período começa em $t = 0$, pode ser escrito como
+\begin{equation}
+h(t) = (t\cdot f - round\_down(t\cdot f))\cdot 100.
+\label{eq:functionH}
+\end{equation}
+Por exemplo, se um sinal tiver uma frequência de 2Hz e $t =1,25 $, então $t$ está em 50\% do terceiro período, $h(t) = (1.25 \cdot 2 - round\_down (1.25 \cdot 2)) \cdot 100 = 50\% $.
+
+Uma onda quadrada pode ser implementada pela comparação entre a função $h(t)$ e o ciclo de trabalho da onda. Para um ciclo de trabalho definido $DC$ ({\it duty-cycle}), uma onda quadrada pode ser escrita como
+\begin{equation}
+g[k] =
+  \begin{cases}
+    \text{DC offset + Amplitude}       & \quad \text{se } h[k] < DC\\
+    \text{DC offset - Amplitude}  & \quad \text{se } h[k] \geq DC\\
+  \end{cases}
+\end{equation}
+
+\section{Sinal de Simulação de Fluxo Sanguíneo}
+
+O fluxo de sangue para a aorta vindo do ventrículo durante o ciclo cardíaco pode ser modelado como uma onda senoidal durante a sístole~\cite{bloodFlow}. Foi decidido modelar o fluxo sanguíneo como um sinal DC fora do período da sístole, diferentemente de \cite{bloodFlow}. Um exemplo com amplitude de 0,4 e valor DC de 0,1 pode ser visto na figura \ref{fig:blood}. O sinal senoidal pode ser descrito como
+\begin{equation}
+I(t) = sen\left(\pi \frac{mod(t,T_c)}{T_s} \right),
+\end{equation}
+onde $T_c$ é o período do ciclo cardíaco em segundos, $T_s$ é o período de sístole, em segundos e $mod(t, T_c)$ representa o restante de $t$ dividido por $T_c$.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = .5\textwidth]{figs/BloodFlow}
+\caption{Exemplo de sinal de simulação de fluxo sanguíneo.}
+\label{fig:blood}
+\end{figure}
+
+A implementação do sinal é feita de forma semelhante ao sinal de onda quadrada, pela comparação entre a função $h(t)$ descrita na equação (\ref{eq:functionH}) e $T_s /T_c \times 100$. O sinal pode ser descrito como
+\begin{equation}
+g[k] =
+  \begin{cases}
+    \text{DC offset + Amplitude} \cdot I[k]      & \quad \text{se } h[k] < T_s/T_c*100\\
+    \text{DC offset}  & \quad \text{se } h[k] \geq T_s/T_c*100\\
+  \end{cases}.
+\end{equation}
+
+\section{Sinal de Ruído Branco}
+
+O ruído branco é um sinal aleatório com intensidade igual em diferentes frequências, dando-lhe uma densidade espectral de potência constante. Foi implementado um sinal de ruído branco Gaussiano, o que significa que cada amostra do sinal possui uma distribuição normal com média zero. Um exemplo de um sinal de ruído branco gaussiano pode ser visto na figura \ref{fig:whiteNoise}, onde é possível ver que o histograma de ruído forma uma distribuição gaussiana.~\cite{whiteNoise}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = .8\textwidth]{figs/whiteNoise}
+\caption{Sinal de ruído branco Gaussiano com histograma~\cite{whiteNoise}.}
+\label{fig:whiteNoise}
+\end{figure}
+
+O maior desafio na geração desse sinal é gerar números aleatórios com uma distribuição normal. Foi usado a forma básica da Transformação Box-Muller para fazer isso. É um método de amostragem de números pseudo-aleatórios para gerar pares de números aleatórios independentes, normalmente distribuídos e variância unitária, através de uma fonte de números aleatórios uniformemente distribuídos.~\cite{boxMullerTransform}
+
+O algoritmo consiste basicamente em gerar dois números aleatórios, $ u_1 $ e $ u_2 $, e usar as fórmulas abaixo para gerar variáveis aleatórias independentes com uma distribuição normal padrão com média zero e variância unitária.
+\begin{equation}
+Z_0 = R \cos(\Theta) =\sqrt{-2 \ln u_1} \cos(2 \pi u_2)
+\end{equation}
+\begin{equation}
+Z_1 = R sen(\Theta) = \sqrt{-2 \ln u_1} sen(2 \pi u_2)
+\end{equation}
+
+Então, uma distribuição normal com média $ \mu $ (DC offset) e variância $ \sigma^{2} $ pode ser gerada por
+\begin{equation}
+g[k] = \mu + \sigma \cdot Z_0[k]\qquad \text{ ou }\qquad g[k] = \mu + \sigma \cdot Z_1[k].
+\end{equation}
+
+\section{Janelas Hamming, Hanning e Retangular}
+
+Uma função de janela é uma função que é zero fora de algum intervalo escolhido, o intervalo de injeção neste caso. A implementação de janelas consiste em calcular o valor da janela $ w[k] $ e multiplica-lo pelo valor do sinal $ g[k]$, então o sinal resultante seria $ w[k] \times g[k] $.
+
+A janela retangular é a mais simples delas, onde
+\begin{equation}
+w[k] = 1.
+\end{equation}
+
+As janelas Hamming e Hanning são mais complexas. Ambas são descritas pela equação
+\begin{equation}
+w[k] = \alpha - (1-\alpha) \;\cos \left({\frac {2\pi k}{T}}\right),
+\end{equation}
+onde $ \alpha = 0,5 $ para a janela Hanning e $ \alpha = 0,54 $ para a janela Hamming.~\cite{window}
+
+%###############################################################################################################################               
+%###############################################################################################################################               
+%###############################################################################################################################               
 
 \chapter{Programação do Controlador}
 
 % Resumo opcional. Comentar se não usar.
-\resumodocapitulo{Resumo opcional.}
+%\resumodocapitulo{Resumo opcional.}
+
+
+\begin{figure}[!b]
+\centering
+\includegraphics[width = .5\textwidth]{figs/LogicalView}
+\caption{{\it Logical view} do projeto no programa Automation Studio.}
+\label{fig:logView}
+\end{figure}
 
 \section{Introdu\c{c}\~{a}o}
 
-Na introdu\c{c}\~{a}o dever\'{a} ser feita uma descri\c{c}\~{a}o geral da
-metodologia que foi seguida para o desenvolvimento. A seguir, \'{e} feita a
-desci\c{c}\~{a}o do sistema desenvolvido. 
+Foi utilizado o programa Automation Studio (AS) V4.1.10.69 da B{\&}R. O explorador de projetos do software pode ser dividido em três visualizações principais: {\it Configuration view, Physical view} e {\it Logical view}. A {\it Logical view} representa a parte do projeto que é independente do hardware. É onde os programas, bibliotecas e tabelas de parâmetros podem ser encontrados. A {\it Configuration view} é a parte do programa que depende do hardware. É onde todas as configurações gerais de hardware podem ser encontradas. É importante notar que o AS permite que mais de uma configuração seja definida para que o mesmo projeto possa ser configurado para vários hardwares diferentes. A {\it Physical view} exibe o hardware contido na configuração ativa. Os módulos de hardware na configuração ativa podem ser gerenciados nesta visualização. \cite{ASHelper}
 
-Deve-se ressaltar que equa\c{c}\~{o}es fazem parte do texto, devendo receber pontua\c{c}\~{a}o apropriada e ser numerada. Alguns exemplos s\~{a}o mostrados na se\c{c}\~{a}o \ref
-{SecClassificador}.
+A programação do CLP seguiu a rede de Petri descrita no capítulo Projeto de Automação. Após a programação, realizou-se a configuração de hardware do controlador.
 
-\section{Organização do projeto}
+\section{Organização do Projeto}
+
+Optou-se por dividir o projeto em vários programas, onde cada programa tem uma função epecífica.
+Com essa modularização, fica mais fácil de entender e modificar o projeto.
+A {\it Logical view} do projeto pode ser vista na figura \ref{fig:logView}, onde estão listados todos os programas do projeto. Os arquivos com extensão var são arquivos de definição de variáveis e os arquivos com extensão typ são arquivos definição de tipos. 
+
+Os programas foram escritos principalmente em linguagem Ladder e Texto Estruturado. Apenas um dos programas foi escrito em C, pois precisava-se de uma biblioteca que é disponível somente para essa linguagem. A comunicação entre os programas ocorre por meio de variáveis globais, que são definidas no arquivo Global.var. Um diagrama que mostra a comunicação entre os programas pode ser visto na figura \ref{fig:com}, onde o sentido das setas representam o sentido da comunicação.
+
+\begin{figure}[!b]
+\centering
+\includegraphics[width = .8\textwidth]{figs/programmsCom}
+\caption{Diagrama de comunicação dos programas.}
+\label{fig:com}
+\end{figure}
+
+Cada programa é composto de dois arquivos de código (um que é executado ciclicamente e outro que é executado somente quando a máquina é inicializada), um arquivo de declaração de variável e um arquivo de definição de um tipo.
+
+Os programas \textbf{MpAxisBasic1}, \textbf{MpAxisBasic2} e \textbf{SDC} são responsáveis pelo controle dos atuadores. Eles recebem a velocidade desejada para os êmbolos e o retorno dos encoders, e então aplicam os controladores PID projetados.
+Os programas dentro do pacote \textbf{StateMachine} são responsáveis por determinar o estado atual do máquina. Eles também implementam os modos de operação: Manual, Enchimento e Injeção.
+O programa \textbf{Axes{\_}Initialization} implementa os procedimentos de inicialização dos Eixos. Os programas \textbf{Atuators{\_}Control} e \textbf{Inje{\_}Retr{\_}Diagram} recebem como entrada todas as saídas de todos os programas de modos de operação e determinam o comportamento dos atuadores.
+
+O arquivo de visualização \textbf{Visu2} é onde a interface do usuário e controle supervisório está programada. É onde as páginas do monitor LCD e sua interação com os programas são implementados.
 
 
 
-\section{Detalhação dos programas}
+\section{Detalhamento dos Programas}
+
+Esta seção tem o objetivo de explicar de forma detalhada a funcionalidade de cada programa e como eles se relacionam. Não foram inseridos detalhes específicos, como nomes de variáveis. Esse tipo de detalhes podem ser melhor entendidos pela leitura dos programas, que são bem comentados. Os programas se encontram no DVD entregue junto ao trabalho.
+\\
+\begin{enumerate}
+\item\textbf{StateMachine/MainStateMachine} (Texto Estruturado)
+
+Este programa detecta em qual modo de operação o sistema está e controla o relé que alimenta o driver de motor Sabertooth.
+
+À medida que o usuário navega pelas páginas da visualização, este programa determina o modo atual por uma estrutura do tipo {\it case switch}, que usa o número da página atual para determinar o estado atual. Em seguida, ele define variáveis que representam esse estado e são entradas para os programas \textbf{Inje{\_}Retr{\_}Diagram} e \textbf{Atuators{\_}Control}.
+Finalmente, o programa implementa o controle do relé que alimenta o driver de motor Sabertooth. O relé é desativado em duas ocasiões, quando no modo Stand-by ou quando o CLP está sendo inicializado. Quando o sistema entra no modo Stand-by, o programa também desativa os controladores dos atuadores, caso contrário, isso causaria problemas. Assim, o programa armazena o estado da alimentação desses controladores ao entrar no modo Stand-by. Quando sai desse modo, o programa define a estado da alimentação dos controladores de acordo com o estado armazenado.
+
+\item\textbf{StateMachine/ManualState} (Ladder)
+
+Este é um programa simples que envia comandos para mover os êmbolos. Esses comandos são gerados pressionando os botões na página do manual de visualização. Esses comandos são enviados para o programa \textbf{Inje{\_}Retr{\_}Diagram}, que só os enviará como comandos globais se o programa \textbf{MainStateMachine} indicar que o estado atual é o modo Manual.
+
+\item\textbf{StateMachine/FillState{\_}Pkg/FillState} (Ladder)
+
+Este programa tem como entradas os botões na página de enchimento da visualização e o estado da posição dos êmbolos e, como saídas, ele fornece comandos para mover os êmbolos para o programa \textbf{Inje{\_}Retr{\_}Diagram}, que só os enviará como comandos globais se o programa \textbf{MainStateMachine} indicar que o estado atual é o modo de enchimento, de forma semelhante ao programa \textbf{ManualState}.
+
+O estado da posição dos êmbolos refere-se a se as seringas estão cheias (totalmente ou a um volume definido pelo usuário). Esse estado é recebido do programa \textbf{Fill{\_}Position}.
+
+\item\textbf{StateMachine/FillState{\_}Pkg/Fill{\_}Position} (Texto Estruturado)
+
+É um programa muito simples que apenas verifica se a posição do êmbolo atingiu o volume desejado (ou está além disso) e passa essas informações para o programa \textbf{FillState}.
+
+\item\textbf{StateMachine/InjectionState{\_}Pkg/InjectionState} (Ladder)
+
+Este programa é usado para fazer o controle do intervalo de injeção com os botões Iniciar e Parar injeção da página de injeção da visualização como entradas. Quando o botão Iniciar é pressionado, ele envia um sinal para o programa \textbf{Injection{\_}control}, que usa um contador para controlar o tempo de injeção. Quando o botão Parar é pressionado ou o atuador atingir o sensor de limite, este programa interrompe a injeção.
+
+\item\textbf{StateMachine/InjectionState{\_}Pkg/Injection{\_}control} (Texto Estruturado)
+
+Este é o programa mais complicado do projeto porque implementa todos os sinais de injeção, conforme descrito no capítulo anterior. O que ele basicamente faz é obter os parâmetros de injeção definidos pelo usuário e o sinal do botão Iniciar, que vem do programa \textbf{InjectionState}, e calcula a velocidade que os êmbolos devem ter no momento atual. Esta velocidade é dirigida aos controladores do atuador através do programa \textbf{Atuators{\_}Control}. Uma descrição simplificada do programa pode ser vista na figura \ref{fig:diagramaInject}.
+
+Este programa usa um número aleatório gerado pelo programa \textbf{RandomNumber} para gerar os sinais de ruído branco. Como nos outros modos de operação, o modo Injeção envia seus comandos aos programas \textbf{Inje{\_}Retr{\_}Diagram} e \textbf{Atuators{\_}Control}.
+\newpage
+\begin{figure}[h!]
+\centering
+\includegraphics[width = .6\textwidth]{figs/diagramaInject}
+\caption{Fluxograma do programa StateMachine/InjectionState{\_}Pkg/Injection{\_}control.}
+\label{fig:diagramaInject}
+\end{figure}
+
+\item\textbf{StateMachine/InjectionState{\_}Pkg/RandomNumber} (C)
+
+Este programa simplesmente gera números aleatórios com distribuição gaussiana usando o método descrito no capítulo anterior. Esses números são usados pelo programa \textbf{Injection{\_}control} para gerar sinais de ruído brancos.
+
+\item\textbf{Axes{\_}Initialization} (Texto Estruturado)
+
+Este programa implementa algoritmos para inicializar os eixos. Existem dois modos de inicialização, inicialização normal e inicialização forçada. O modo de inicialização normal retrai os eixos completamente e define a posição inicial (zero do sistema) nos sensores de limite. O modo de inicialização forçada simplesmente define a posição inicial como a posição atual. Ou seja, ao se realizar a inicialização forçada, não se sabe qual é a posição dos atuadores, o que não é recomendado.
+\newpage
+\item\textbf{Actuators{\_}Control} (Texto Estruturado)
+
+Conforme mencionado anteriormente, uma das funções deste programa é receber informações de todos os modos de operação e determinar as velocidades definidas que deve fornecer aos controladores dos atuadores. Também implementa o controle de pressão, lê a informação que vem dos sensores de limite e calcula os níveis de fluidos nas seringas para fins de controle supervisório. Uma descrição simplificada do programa pode ser vista na figura \ref{fig:diagrama22}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = .95\textwidth]{figs/diagrama22}
+\caption{Fluxograma do programa Actuators{\_}Control.}
+\label{fig:diagrama22}
+\end{figure}
+
+\item\textbf{Inje{\_}Retr{\_}Diagram} (Ladder)
+
+Este programa funciona como um multiplexador. Ele recebe comandos de todos os modos de operação ao mesmo tempo e determina a saída de acordo com o estado atual, que é fornecido pelo programa \textbf{MainStateMachine}. Suas saídas (velocidades desejadas dos atuadores) vão diretamente para os programas \textbf{MpAxisBasic1} e \textbf{MpAxisBasic2}, os controladores dos atuadores.
+
+\item\textbf{MpAxisBasic1} (Ladder) \& \textbf{MpAxisBasic2} (Ladder) \& \textbf{SDC} (Texto Estruturado)
+
+Esses programas funcionam todos juntos como os controladores dos atuadores. Os programas \textbf{MpAxisBasic1} e \textbf{MpAxisBasic2} usam o bloco MpAxisBasic que estão vinculados aos objetos de movimento NC, onde encontra-se as tabelas em que são definidos todos os parâmetros dos controladores. O programa \textbf{SDC} faz o mapeamento das entradas e saídas dos sistemas de controle.
+\end{enumerate}
 
 
+\section{Configuração de Hardware da CLP}
 
-\section{Controle de velocidade dos atuadores}
+Primeiramente, foram mapeadas todas as variáveis de entrada e saída do projeto nos cartões da CLP.
+Em seguida, definiu-se as frequências de execução dos programas, que são tarefas cíclicas. Definiu-se também o objeto de visualização usado, \textbf{Visu2}, os arquivos de objetos de movimento (controladores PID) usados e algumas outras configurações. Os períodos cíclicos definidos para os programas podem ser vistos na figura \ref{fig:cyclic}. A maioria dessas configurações são feitas no arquivo \textbf{Cpu.sw}.
 
+Os arquivos de configuração dos objetos de movimento podem ser encontrados dentro da pasta \textbf{Motion}. Os dois objetos usados neste projeto são adicionados na configuração de hardware no arquivo \textbf{Motion/SdcNcMap.ncm}.
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figs/cyclic}
+\caption{Frequências de execução dos programas.}
+\label{fig:cyclic}
+\end{figure}
 

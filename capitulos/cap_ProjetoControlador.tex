@@ -1,0 +1,208 @@
+%###############################################################################################################################               
+\chapter{Controle de Velocidade dos Atuadores}
+
+Optou-se pelo uso de um controlador Proporcional Integral Derivativo (PID). Primeiramente, utilizou-se as ferramentas de {\it auto-tune} do CLP, mas não obteve-se bons resultados. Acredita-se que o motivo foi o fato de que essas ferramentas são feitas para uso com os módulos de motor da B{\&}R, que conectam-se diretamente ao barramento X2X do CLP. Ao invés desses módulos, optou-se pelo uso de um módulo externo (Sabertooth 2x60) ligado à saídas digitais do CLP.
+
+Como essas ferramentas não funcionaram, decidiu-se realizar a modelagem completa dos atuadores para o projeto dos controladores PID. Observou-se que o sistema  apresenta algumas não-linearidades. A resposta varia levemente de acordo com a extensão do atuador, o sentido de movimento e a presença ou não de contraste. Assim, optou-se por realizar o projeto para o modelo obtido com o atuador extendido (dentro da seringa), com a presença de agente de contraste e com movimento no sentido de injeção. Esse é o caso mais importante, o mesmo que ocorre durante o procedimento de injeção, onde se deseja ter a melhor resposta.
+
+\section{Introdução  \cite{Ogata:1994}}
+
+A função de transferência de um controlador analógico é dado por
+
+\begin{equation}\label{eq::analogpid}
+m(t) = K\left[e(t) + \frac{1}{T_i}\int_0^t e(\tau)d\tau +T_D \frac{de(t)}{dt}\right]
+\end{equation}
+
+Para discretizar a equação (\ref{eq::analogpid}), é feita a aproximação da integral pelo somatório trapezoidal e o termo da derivada pela forma de diferença de dois pontos
+
+\begin{eqnarray}\nonumber
+m[kT] & = & K\left\{e[kT] + \frac{T}{T_i}\left[\frac{e[0]+e[T]}{2} + \frac{e[T]+e[2T]}{2} + \cdots + \frac{e[(k-1)T]+e[kT]}{2} \right]\right.\\\nonumber
+&& +\left.T_D \frac{e[kT] - e[(k-1)T]}{T}\right\}\\
+& = & K\left\{e[kT] + \frac{T}{T_i}\sum_{h=1}^k \frac{e[(h-1)T]+e[hT]}{2} +\frac{T_D}{T} (e[kT] - e[(k-1)T])\right\}.
+\end{eqnarray}
+
+Define-se a função
+
+\begin{equation}
+f(hT) = \frac{e[(h-1)T]+e[h T]}{2}
+\end{equation}
+
+tal que $f(0)=0$. Desta forma, pode-se escrever o somatório trapezoidal como
+
+\begin{equation}
+\sum_{h=1}^k f(hT) = \sum_{h=1}^k \frac{e[(h-1)T]+e[h T]}{2}
+\end{equation}
+
+Aplicando-se a transformada $\mathcal{Z}$ no somatório, obtem-se
+
+\begin{eqnarray}\nonumber
+\mathcal{Z}\left\{\sum_{h=1}^k f(hT)\right\}&=&\frac{1}{1-z^{-1}} \left[F(z) - \cancel{F(0)}\right]\\ \label{eq::sumfz}
+&=&\frac{1}{1-z^{-1}}F(z)
+\end{eqnarray}
+
+Para se encontrar $F(z)$,
+
+\begin{eqnarray}\nonumber
+F(z)&=&\mathcal{Z}\left\{ f(hT) \right\}\\\nonumber
+&=&\mathcal{Z}\left\{ \frac{e[(h-1)T]+e[h T]}{2} \right\}\\\nonumber
+&=&\frac{z^{-1}E(z)+E(z)}{2}\\\label{eq::fz}
+F(z)&=&\frac{z^{-1}+1}{2}E(z)
+\end{eqnarray}
+
+Substituindo-se (\ref{eq::fz}) em (\ref{eq::sumfz}), tem-se
+
+\begin{equation}
+\mathcal{Z}\left\{\sum_{h=1}^k \frac{e[(h-1)T]+e[hT]}{2}\right\} = \frac{1+z^{-1}}{2(1-z^{-1})}E(z)
+\end{equation}
+
+Desta forma, o controlador PID discretizado pode ser descrito por
+
+\begin{eqnarray}\nonumber
+M(z)&=&K\left\{ E(z) + \frac{T}{T_i}\frac{1+z^{-1}}{2(1-z^{-1})}E(z) + \frac{T_D}{T}(1-z^{-1})E(z) \right\}\\\nonumber
+\frac{M(z)}{E(z)}&=&K\left\{ 1 + \frac{T}{T_i}\frac{1+z^{-1}}{2(1-z^{-1})} + \frac{T_D}{T}(1-z^{-1}) \right\}\\\nonumber
+&=& K - \frac{KT}{2T_i}+\frac{KT}{T_i}\frac{1}{(1-z^{-1})} + \frac{KT_D}{T}(1-z^{-1})
+\end{eqnarray}
+
+Portanto, o controlador PID na forma posicional é dado por
+\begin{equation}
+G_D  =  K_P + \frac{K_i}{(1-z^{-1})} + K_D(1-z^{-1}),
+\end{equation}
+onde
+
+\begin{eqnarray}
+K_P&=&K-\frac{KT}{2T_i}=K-\frac{K_i}{2},\\
+K_i&=&\frac{KT}{T_i},\\
+K_D&=&\frac{KT_D}{T}.
+\end{eqnarray}
+
+Usando-se $\nabla m[kT] = m[kT] - m[(k-1)T]$, poderia-se derivar a equação de controle PID na forma de velocidade, mas optou-se por utilizar o controlador na forma posicional, que é mais sensível à mudanças na referência, tornando-o mais rápido, porém com maior sobre-sinal.
+
+%###############################################################################################################################               
+%###############################################################################################################################               
+%###############################################################################################################################               
+\section{Modelagem e Identificação dos Parâmetros da Planta}
+\subsection{Função de transferência do motor elétrico DC}
+
+Para o sistema em questão, atuador linear, um modelo matemático aproximado que relaciona a posição do atuador $P(s)=\mathcal{L}\{p(t)\}$ em função da tensão da armadura $V_{a}(s)$ do motor, conforme descrito em \cite{Nise:2000:CSE:519085}, é
+\begin{align}
+P(s)=\dfrac{K_{m}}{s(\tau s+1)}V_{a}(s). \label{eq:FTpos}
+\end{align}
+
+Os parâmetros: $K_m$ e $\tau$ são ,respectivamente, o ganho em regime permanente e a constante de tempo do sistema.
+
+Para tornar o modelo mais próximo ao comportamento real, considerou-se que para girar o motor no sentido positivo é necessário que a tensão de entrada ultrapasse um limiar determinado por $\delta_{+}$. A mesma abordagem se dá para que o motor gire no sentido negativo, onde o valor negativo de tensão $\delta_{-}$ deve ser ultrapassado. Esse efeito pode ser modelado como uma banda morta na tensão de entrada $v_{a}(t)$ que é uma componente não linear do modelo. Logo, o modelo visto na equação (\ref{eq:FTpos}) pode ser representado por uma componente linear e uma não-linear: 
+\begin{align}
+P(s)=\dfrac{K_{m}}{s(\tau s+1)}U_{a}(s) \label{eq2}
+\end{align}
+\begin{align}
+u_{a}(t)=h(v_{a}(t),\delta_{+},\delta_{-})=\begin{cases} v_{a}(t)-\delta_{+} & \mbox{se } v_{a}(t)\geq \delta_{+}\\ \;\;\;\;\;\;\;0 & \mbox{se } -\delta_{-}< v_{a}(t)<\delta_{+} \\ v_{a}(t)-\delta_{-} & \mbox{se } v_{a}(t)\leq \delta_{+} \end{cases}
+\label{eq3}
+\end{align}
+
+Portanto, para identificar os Parâmetros lineares do projeto, deve-se identificar os Parâmetros não-lineares primeiro. Assim, deve-se acrescentar um compensador de zona morta ao sistema, de forma a aproximar seu comportamento ao de um sistema linear.
+
+\subsection{Identificação dos Parâmetros Não-Lineares do Sistema}
+
+A identificação dos parâmetros $\delta_{-}$ e $\delta_{+}$ da componente não-linear se dará pela aplicação de um sinal de tensão triangular ao sistema, onde analisou-se a velocidade do carrinho como a saída do sistema. Sabendo-se que $sP(s) = \Omega (s)$, onde $\Omega (s)$ é a velocidade do carrinho:~\cite{Nise:2000:CSE:519085}
+\begin{align}
+\Omega(s)=\dfrac{K_{m}}{\tau s+1}U_{a}(s)
+\end{align}
+
+Quando o valor da tensão de entrada $v_{a}(t)$ está entre os parâmetros $\delta_{-}$ e $\delta_{+}$, o carrinho não se move, pois não há potência suficiente para fazer com que o motor gire. Assim, com a aplicação da onda triangular na entrada do sistema, anotou-se os valores para o qual o carrinho começou-se a se mover ($\delta_{-i}$ para o sentido negativo e $\delta_{+i}$ para o sentido positivo). Assim, calculou-se os parâmetros não lineares pela média desses valores anotados:~\cite{Roteiro}
+\begin{equation}
+\delta_{-}=\sum_{i=0}^{k}\frac{\delta_{-i}}{k} ,
+\qquad
+\delta_{+}=\sum_{i=0}^{k}\frac{\delta_{+i}}{k}
+\end{equation}
+
+\subsection{Identificação dos Parâmetros Lineares do Sistema}
+
+Após a identificação dos parâmetros não-lineares do sistema, obteve-se um sistema linear pelo acréscimo de um compensador de zona morta ao sistema. Assim, aplicou-se um degrau ao sistema em malha fechada, considerando a posição do carrinho como a saída do sistema, como na equação (\ref{eq:FTpos}). A função de transferência de malha fechada, $F(s)$, pode ser calculada como:
+
+\begin{equation}
+F(s) = \frac{P(s)/V_a(s)}{1+P(s)/V_a(s)} = \frac{K_m/\tau}{s^2 + (1/\tau) s + (K_m/\tau)} = \frac{\omega_n^2}{s^2 + 2\xi\omega_n s + \omega_n^2} \label{eq:FTMF}
+\end{equation}
+
+Conhecendo o tempo de pico, $t_p$, e o tamanho do sobre-sinal, $M_p$, da resposta, pode-se determinar os parâmetros lineares do sistema. Sabe-se que:~\cite{Nise:2000:CSE:519085}
+
+\begin{equation}
+t_p = \frac{\pi}{\omega_n\sqrt{1-\xi^2}} \label{eq:propr1}
+\end{equation}
+\begin{equation}
+M_p = e^{-\frac{\pi\xi}{\sqrt{1-\xi^2}}} \label{eq:propr2}
+\end{equation}
+
+Das equações (\ref{eq:FTMF}), (\ref{eq:propr1}) e (\ref{eq:propr2}), tem-se:
+
+\begin{equation}
+\xi = \frac{-log(M_p/100)}{\sqrt{\pi^2+log(M_p/100)^2}},
+\qquad
+\omega_n=\frac{\pi}{t_p\sqrt{1-\xi^2}}
+\end{equation}
+
+\begin{equation}
+\tau = \frac{1}{2\xi\omega_n},
+\qquad
+K_m = \omega_n^2\tau = \frac{\omega_n}{2\xi}
+\end{equation}
+
+\subsection{Parâmetros Encontrados}
+
+Os valores encontrados experimentalmente estão na tabela \ref{tab:valoresEstimados}.
+\begin{table}[!h]
+   \centering
+    \begin{tabular}{lr|lr}
+      Atuador 1 & &Atuador 2 & \\
+      \hline
+      Parâmetro & Valor&Parâmetro & Valor\\
+      \hline
+      $K_m$ & 57,30&$K_m$ & 55,13\\
+      $\tau$  & 0,0816&$\tau$  & 0,0667\\
+      $\hat{\delta}_{+}$ & 0.1313V& $\hat{\delta}_{+}$ & 0.0903\\
+      $\hat{\delta}_{-}$  & -0.1004V&  $\hat{\delta}_{-}$  & -0.0323V\\
+    \end{tabular}
+    \caption{Valores estimados para os modelos dos atuadores.}
+    \label{tab:valoresEstimados}
+  \end{table}
+  
+\subsection{Discretização da Planta}
+
+Considerando a planta conectada com um segurador de ordem zero, a função de transferência da planta discretizada pode ser escrita como~\cite{Ogata:2001:MCE:516039}
+\begin{equation}
+G(z) = (1-z^{-1})\mathcal{Z}\left\{ \dfrac{K_{m}}{s^2(\tau s+1)}\right\}.
+\end{equation}
+
+Substituindo os valores encontrados para os parâmetros e com o auxílio da função {\bf c2d} do Matlab, que discretiza funções de transferência, obteve-se
+
+\begin{equation}
+G_1(z) = \dfrac{0,03372 z + 0,03237}{z^2 - 1,885 z + 0,8847} \qquad\text{ e }\qquad G_2(z) = \dfrac{0,03934 z + 0,03742}{z^2 - 1,861 z + 0,8608} 
+\end{equation}
+
+onde $G_1(z)$ é a função de transferência do motor 1 e $G_2(z)$ é a função de transferência do motor 2.
+
+\section{Projeto dos Controladores e Simulações}
+\subsection{Especificações do Projeto}
+
+As tarefas responsáveis pelo controle dos atuadores são executadas pela CLP a cada 10 ms. 
+Escolheu-se uma resposta desejada para o sistema com tempo máximo de acomodação de 0.3s e sobre-sinal máximo de 15\%. Sabe-se que a resposta dos atuadores sem controlador não cumpre esses requisitos, e eles são alcançáveis sem a atingir o limite de saturação da tensão de entrada. 
+
+\subsection{Projeto do Controlador PID da Forma Posicional}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width = \textwidth]{figs/modeloPos}
+\caption{Modelo do sistema com controlador PID na forma posicional.}
+\label{fig:modeloPos}
+\end{figure}
+
+Para o projeto do controlador, primeiramente, criou-se um modelo do sistema com o controlador no Simulink, que pode ser visto na figura \ref{fig:modeloPos}. Em seguida, criou-se um algoritmo que varia o valor das constantes de ganho do controlador, simula o sistema para cada um desses conjuntos de constantes e salva os valores das contantes que satisfizeram os requisito de projeto. Finalmente, executou-se novamente o algoritmo para faixas de valores que apresentaram os melhores resultados nas primeiras simulações. O mesmo foi feito para os dois atuadores.
+
+Implementou-se os controladores na CLP, conforme descrito no capítulo Programação do Controlador. Acrescentou-se um compensador de zona morta para compensar a não linearidade da zona morta dos atuadores. Em seguida, testou-se os melhores resultados obtidos com as simulações e selecionou-se o valor das constantes que resultaram na melhor resposta transitória.
+
+Controladores projetados:
+
+\begin{equation}
+G_{D1}(z)  =  41,58 + 31,14(1-z^{-1}) \quad\text{ e }\quad G_{D2}(z)  =  57,13 + \frac{0,15}{(1-z^{-1})} + 22,00(1-z^{-1}) 
+\end{equation}
+
+Os resultados obtidos foram satisfatórios, dentro dos requisitos de projeto, e são detalhados no capítulo de Resultados Experimentais. 

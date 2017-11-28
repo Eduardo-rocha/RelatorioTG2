@@ -3,4 +3,33 @@
 
 \chapter{Conclus\~{o}es}\label{CapConclusoes}
 
-Este capítulo é em geral formado por: um breve resumo do que foi apresentado, conclus\~{o}es mais pertinentes e propostas de trabalhos futuros.
+Esse trabalho consistiu do projeto e construção de uma bomba de injeção médica para uso em neuroangiografia 4D. Primeiramente, especificou-se todos os requisitos da máquina, que serviram de base para o projeto. O projeto foi dividido em em duas partes, o projeto mecânico e o de automação, que ocorreram simultaneamente. Após a construção da máquina realizou-se testes para a verificação de seu correto funcionamento.
+
+O projeto mecânico consistiu inicialmente do desenho de um diagrama de arquitetura, que mostra todos os componentes mecânicos do sistema. Em seguida, com base nos requisitos do projeto, escolhe-se todos esses componentes. Finalmente, a bomba de injeção foi construida e fixada em um carrinho, que facilita sua locomoção e armazenamento. A construção da máquina necessitou da usinagem de muitas peças, resultando em mais de 100 horas de trabalho em oficina, com tornos e fresas CNC.
+
+O projeto de automação começou pela modelagem do sistema por meio de autômatos e redes de Petri. Em seguida, escolheu-se os componentes que fazem parte do projeto de automação, sensores, CLP e módulos do CLP. Após a escolha de todos esses componentes, os diagramas elétricos do sistema foram feitos e os componentes foram montados no carrinho. Projetou-se controladores PID discretos na forma posicional para o controle de velocidade dos atuadores.
+Com base na rede de Petri final obtida pela modelagem do sistema e no projeto dos controladores PID, programou-se o CLP. Finalmente, implementou-se o controle supervisório e interface de comunicação com o usuário.
+
+Após a construção completa da bomba de injeção diversos testes foram realizados, conforme descrito no capítulo anterior. Testou-se todos os modos de operação, os perfis de injeção, as janelas Hamming e Hanning implementadas e o controle de pressão do sistema. Todos os testes realizados foram bem sucedidos e a máquina vem sendo utilizada com sucesso no Wisconsin Institute for Medical Research desde então. A figura \ref{fig:injetorWIMR} mostra a máquina sendo utilizado em um dos laboratórios do grupo de pesquisa em Agosto de 2017.
+
+Com funcionalidades que outras bombas de injeção disponíveis comercialmente não possuem, os membros do grupo de pesquisa no WIMR agora podem testar novos protocolos de injeção para neuroangiografia 4D e possuem uma grande liberdade para a realização de mudanças na máquina conforme a necessidade. Algo que não é possível com outras bombas. 
+Foi difícil de estimar o preço total da máquina, pois muitas peças foram doadas sem orçamentos. Utilizando preços aproximados, calculou-se que a máquina custa aproximadamente 12 mil dólares em peças. Esse preço foi satisfatório ao se considerar que as máquina disponíveis comercialmente custam de 35 a 50 mil dólares.
+
+O desenvolvimento do trabalho exigiu conhecimentos em diversas áreas dentro da engenharia mecatrônica, como controle, automação, eletrônica e mecânica dos fluidos. Diversas novas habilidades foram desenvolvidas e aperfeiçoadas dentro dessas áreas. Durante esse período, teve-se contato com tecnologia de ponta, como, por exemplo, o Micro-CT scanner utilizado no laboratório de metrologia, que é avaliado em 400 mil dólares.
+
+Conforme descrito na justificativa do projeto, no capítulo 1, a máquina está sendo utilizada para simulações em  corpos gelatinosos, onde um dos eixos é utilizado para simular o fluxo sanguíneo. Nas próximas etapas do estudo no WIMR, a bomba de injeção será utilizada em seres vivos. Antes disso, sensores capazes de dectar a frequência e fase do fluxo sanguíneo na artéria onde a injeção ocorre deverão ser acoplados ao sistema. Assim, as injeções poderão ocorrer em sincronia com o fluxo sanguíneo, conforme ocorre nas simulações.
+
+
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width = .6\textwidth]{figs/injetorWIMR}
+\caption{Bomba injetora sendo utilizada no Wisconsin Institute for Medical Research}
+\label{fig:injetorWIMR}
+\end{figure}
+
+
+
+
+
+

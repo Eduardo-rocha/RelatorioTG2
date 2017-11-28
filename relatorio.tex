@@ -1,5 +1,5 @@
 % Classe default, de acordo com o modelo:
-\documentclass[11pt,a4paper,openright,titlepage,oneside]{book}
+\documentclass[11pt,a4paper,openright,titlepage,twoside]{book}
 
 % Classe alternativa, apropriada para impressão frente-verso. Inclui páginas em branco
 % de forma que capítulos sempre tenham início na página à direita:
@@ -30,6 +30,13 @@
 \usepackage{lastpage}
 \usepackage{graphicx}
 \usepackage{subcaption}
+\usepackage{cancel}
+\usepackage{pdfpages}
+\usepackage{tabu}
+\usepackage{multirow}
+
+
+
 
 % Escolher um dos seguintes formatos:
 %\usepackage{ft1unb} % segue padrão de fonte Times
@@ -88,9 +95,9 @@
 % Os nomes definidos pelos comandos abaixo aparecem na ordem de i a v.
 \membrodabancai{Prof. Guilherme C. de Carvalho, ENM/UnB}
 \membrodabancaifuncao{Orientador}
-\membrodabancaii{Prof. Fulano de Tal 2, ENM/UnB}
+\membrodabancaii{Prof. Antônio Padilla L. Bó, ENE/UnB}
 \membrodabancaiifuncao{Examinador interno}
-\membrodabancaiii{Prof. Fulano de Tal 3, ENM/USP}
+\membrodabancaiii{Prof. Eduardo Stockler Tognetti, ENE/UnB}
 \membrodabancaiiifuncao{Examinador interno}
 \membrodabancaiv{}
 \membrodabancaivfuncao{}
@@ -112,7 +119,7 @@
 \frontmatter
 
 % Texto de dedicatória do primeiro autor
-\dedicatoriaautori{Dedicatória do autor 1}
+\dedicatoriaautori{Aos meus pais, Evandro e Rosana, e aos meus irmãos, Pedro e Filipe.}
 
 % Texto de dedicatória do segundo autor. Caso não tenha um segundo autor, este texto não 
 % será mostrado
@@ -129,7 +136,15 @@
 % Agradecimentos
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Texto de agradecimentos do primeiro autor
-\agradecimentosautori{A inclusão desta seção de agradecimentos é opcional e fica à critério do(s) autor(es), que caso deseje(em) inclui-la deverá(ao) utilizar este espaço, seguindo está formatação.}
+\agradecimentosautori{\textit{Aos meus pais e família, pelo amor, incentivo e apoio incondicional.}
+
+\textit{A todos os professores com quem tive a oportunidade de ter aulas e trabalhar na Universidade de Brasília, não apenas por me proporcionarem o conhecimento necessário para a minha graduação, mas também por me incentivarem e me guiarem durante esses cinco anos.}
+
+\textit{Aos professores Erick Oberstar e Guilherme Carvalho que possibilitaram a realização desse trabalho.}
+ 
+\textit{A todos os profissionais da Universdade de Wisconsin que me ajudaram durante a realização desse trabalho.}
+  
+\textit{A todos meus colegas de curso que me acompanharam e me ajudaram durante esses últimos cinco anos.}}
 
 % Texto de agradecimentos do segundo autor. Caso não tenha um segundo autor, este texto não 
 % será mostrado
@@ -153,6 +168,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Listas de conteúdo, figuras e tabelas.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setcounter{tocdepth}{1}
 \sumario
 \listadefiguras
 \listadetabelas
@@ -182,7 +198,8 @@
 % *** Desenvolvimento ***
 \include{capitulos/cap_ProjetoMecanico}
 \include{capitulos/cap_ProjetoAutomacao}
-\include{capitulos/cap_Programacao}
+\include{capitulos/cap_ProjetoControlador}
+\include{capitulos/cap_Programacao}% +Modelagem sinais
 
 % *** Resultados Experimentais ***
 \include{capitulos/cap_Experimentos}

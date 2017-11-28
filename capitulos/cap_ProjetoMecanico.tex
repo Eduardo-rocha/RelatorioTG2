@@ -33,7 +33,7 @@ Cateter é um tubo fino que pode ser inserido dentro de vasos sanguíneos para o a
 Para a neuroangiografia, utiliza-se cateteres coronários, que possuem diâmetro interno de 0.038 polegadas. Os tubos médicos utilizados são feitos de material de poliuretano, que é altamente flexível, e possui diâmetro interno de 1.8 milímetro.
 \cite{book:cateter}
 
-As seringas utilizadas possuem 40 milímetro de diâmetro interno e 150 mililitro de capacidade. Os êmbolos das seringas são separáveis e necessitam de um conector especial para se conectarem aos atuadores.
+As seringas utilizadas possuem 40 milímetros de diâmetro interno e 150 mililitros de capacidade. Os êmbolos das seringas são separáveis e necessitam de um conector especial para se conectarem aos atuadores.
 
 O principal agente de contraste a ser utilizado é Omnipaque (Iohexol) com uma concentração de 300 miligramas de iodo por mililitro. À temperatura ambiente de $20^o$ C, a viscosidade dinâmica do Iohexol é 0,0116 Pascal segundos \cite{web:OMNIPAQUE}. Quando uma concentração menor é desejada, o contraste é misturado com uma solução salina, diminuindo assim a viscosidade dinâmica da mistura. À temperatura de $20^o$ C, a viscosidade dinâmica da solução salina de uso médico médio, 0,9 moles de NaCl por quilograma, tem uma viscosidade dinâmica de 0,001 Pascal segundos \cite{web:viscosidade}. Ambas as substâncias apresentam densidade próxima da densidade da água.
 
@@ -56,18 +56,18 @@ Força para 1 mL/s & 178N & 810N \\
 Força para 3 mL/s & 498N & 2402N \\ 
 Força para 5 mL/s & 827N & 4003N \\ 
 \end{tabular} 
-\caption{Tabela de forças a serem aplicadas pelo atuador}
+\caption{Tabela de forças a serem aplicadas pelo atuador.}
 \label{tab:forcasAtuador}
 \end{table}
 
 Assim, a força máxima a ser aplicada pelo atuador é de aproximadamente 4000 Newtons. Como há muitas possíveis fontes de erro nos cálculos, como a variação das viscosidades dinâmicas dos fluidos com a variação da temperatura e perdas de energia no sistema serem diferentes das encontradas na literatura, deve-se selecionar um atuador capaz de fornecer uma força maior do que a calculada.
 
-Optou-se pela utilização de atuadores lineares eletro-mecânicos, onde um motor elétrico gera movimento rotativo que é convertido em linear através de um parafuso e engrenagens \cite{book:AcLinear}. Considerando todos os requisitos, escolheu-se o atuador linear modelo ppa24-58b65-12nhlx da linha Electrak da empresa Thompson Linear Inc., que doou os atuadores para o projeto. Esse modelo requer uma tensão de entrada de 24 Volts DC, possui uma capacidade de carga dinâmica de 6672 N (1500 lbf), não possui freio e possui curso de deslocamento de 12 polegadas. Os atuadores pode ser visto na figura \ref{fig:atuador}, onde estão montados à máquina.
+Optou-se pela utilização de atuadores lineares eletro-mecânicos, onde um motor elétrico gera movimento rotativo que é convertido em linear através de um parafuso e engrenagens \cite{book:AcLinear}. Considerando todos os requisitos, escolheu-se o atuador linear modelo ppa24-58b65-12nhlx da linha Electrak da empresa Thompson Linear Inc., que doou os atuadores para o projeto. Esse modelo requer uma tensão de entrada de 24 Volts DC, possui uma capacidade de carga dinâmica de 6672 N (1500 lbf), não possui freio e possui curso de deslocamento de 12 polegadas. Os atuadores podem ser visto na figura \ref{fig:atuador}, onde estão montados na máquina.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=.45\textwidth, angle=270]{figs/ActuatorMount}
-\caption{Atuadores lineares montados à máquina.}
+\caption{Atuadores lineares montados na máquina.}
 \label{fig:atuador}
 \end{figure}
 
@@ -110,7 +110,7 @@ Os atuadores lineares são unidos aos conectores por meio de conexão clevis, onde
 Foi feito um chanfro nos pinos de aço e as peças foram montadas com o uso de um martelo de borracha. 
 Os conectores e as conexões do tipo clevis podem ser vistos nas figuras \ref{fig:conector} e \ref{fig:clevis}.
 
-Um problema enfrentado era que os tubos de extensão dos atuadores costumavam girar, fazendo com que o movimento rotacional gerado pelo motor elétrico não fosse totalmente convertido em movimento linear. Por isso, foi projetada uma estrutura que pode ser anexada aos pinos das conexões do tipo clevis para evitar a rotação indesejada. Essas estruturas foram impressas usando as impressoras 3D do departamento de engenharia mecânica da UW. Elas também podem ser vistas nas figuras \ref{fig:conector} e \ref{fig:clevis}. 
+Um problema enfrentado era que os tubos de extensão dos atuadores costumavam girar, fazendo com que o movimento rotacional gerado pelo motor elétrico não fosse totalmente convertido em movimento linear. Por isso, foi projetada uma estrutura que pode ser anexada aos pinos das conexões do tipo clevis para evitar a rotação indesejada. Essas estruturas foram impressas usando impressoras 3D. Elas também podem ser vistas nas figuras \ref{fig:conector} e \ref{fig:clevis}. 
 
 \newpage
 \begin{figure}[h!]
@@ -126,7 +126,7 @@ Um problema enfrentado era que os tubos de extensão dos atuadores costumavam gir
 \label{fig:clevis}
 \end{figure}
 
-Todas as peças de alumínio e aço foram usinadas nos tornos e fresas CNC da oficina do Colégio de Engenharia da UW.
+Todas as peças de alumínio e aço foram usinadas nos tornos e fresas CNC da oficina do Colégio de Engenharia da University of Wisconsin-Madison.
 
 \section{Fixação dos Sensores}
 
@@ -189,13 +189,13 @@ Finalmente, conforme determinado pelos requisitos de projeto, montou-se toda a e
   \caption{Carrinho comprado sem as adaptações.}
   \label{fig:origCart}
 \end{subfigure}
-\caption{Cart adapted to carry the Power Injector.}
+\caption{Carrinha de ferramentas adaptado para carregar a bomba.}
 \label{fig:CartAdapted}
 \end{figure}
 
 As adaptações mais importantes feitas para o carrinho foram:
 \begin{itemize}
-\item As gavetas foram retiradas para dar mais espaço para dentro da cabine, como pode ser visto na figura \ref{fig:cabine};
+\item As gavetas foram retiradas para dar mais espaço dentro da cabine, como pode ser visto na figura \ref{fig:cabine};
 \item A mesa de ferramentas foi removida para dar espaço para a base de alumínio;
 \item Fortaleceu-se o encaixe das rodas ao carrinho pela adição de um bloco de alumínio, pois o carrinho ficou muito pesado após a adição da base de alumínio;%, como pode ser visto na figura \ref{fig:rodas};
 \item A coluna central que segura a base de alumínio foi parafusada à cabine do carrinho, pois ela havia ficado instável após a fixação da base alumínio, como pode ser visto na figura \ref{fig:cabine};
